@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartupLab - Innowacyjne Rozwiązania</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background: #fafafa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        /* Nagłówek */
+        header {
+            background: white;
+            padding: 20px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.5em;
+            font-weight: 800;
+            color: #6366f1;
+        }
+        
+        nav { display: flex; gap: 40px; }
+        
+        nav a {
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover { color: #6366f1; }
+        
+        .cta-btn {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        /* Hero */
+        .hero {
+            padding: 120px 60px;
+            text-align: center;
+            background: linear-gradient(180deg, #fff 0%, #f0f0ff 100%);
+        }
+        
+        .hero h1 {
+            font-size: 4em;
+            font-weight: 800;
+            margin-bottom: 24px;
+            line-height: 1.1;
+        }
+        
+        .hero h1 span {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.3em;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .hero-btn {
+            padding: 16px 36px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .hero-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+        }
+        
+        .hero-btn.secondary {
+            background: white;
+            color: #6366f1;
+            border: 2px solid #6366f1;
+        }
+        
+        /* Cechy */
+        .features {
+            padding: 100px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 60px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        /* Formularz kontaktowy */
+        .contact {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 100px 60px;
+            text-align: center;
+        }
+        
+        .contact h2 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .contact p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
+        .contact-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .contact-form input,
+        .contact-form textarea {
+            padding: 18px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-family: inherit;
+        }
+        
+        .contact-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .contact-form button {
+            background: white;
+            color: #6366f1;
+            border: none;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .contact-form button:hover {
+            transform: scale(1.02);
+        }
+        
+        /* Statystyki */
+        .stats {
+            padding: 80px 60px;
+            background: white;
+        }
+        
+        .stats-grid {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            text-align: center;
+        }
+        
+        .stat-item h3 {
+            font-size: 3em;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .stat-item p {
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            color: #888;
+            padding: 60px;
+            text-align: center;
+        }
+        
+        footer a {
+            color: #6366f1;
+            text-decoration: none;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #6366f1;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero h1 { font-size: 2.5em; }
+            nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Nagłówek -->
+    <header>
+        <div class="logo">StartupLab</div>
+        <nav>
+            <a href="#features" data-track="nav-features">Funkcje</a>
+            <a href="#stats" data-track="nav-stats">O nas</a>
+            <a href="#contact" data-track="nav-contact">Kontakt</a>
+            <a href="#" data-track="nav-blog">Blog</a>
+        </nav>
+        <button class="cta-btn" data-track="header-cta">Rozpocznij za darmo</button>
+    </header>
+    
+    <!-- Hero -->
+    <section class="hero" data-track-view="hero-section">
+        <h1>Buduj przyszłość z <span>innowacjami</span></h1>
+        <p>
+            Platforma, która przyspiesza rozwój Twojego startupu. 
+            Narzędzia, wiedza i społeczność w jednym miejscu.
+        </p>
+        <div class="hero-buttons">
+            <button class="hero-btn primary" data-track="hero-start-free">
+                🚀 Zacznij za darmo
+            </button>
+            <button class="hero-btn secondary" data-track="hero-watch-demo">
+                ▶️ Zobacz demo
+            </button>
+        </div>
+    </section>
+    
+    <!-- Cechy -->
+    <section class="features" id="features" data-track-view="features-section">
+        <h2>Wszystko czego potrzebujesz</h2>
+        <div class="features-grid">
+            <div class="feature-card" data-track-view="feature-analytics">
+                <div class="feature-icon">📊</div>
+                <h3>Zaawansowana analityka</h3>
+                <p>Śledź kluczowe metryki i podejmuj decyzje oparte na danych. Wizualizacje w czasie rzeczywistym.</p>
+            </div>
+            
+            <div class="feature-card" data-track-view="feature-automation">
+                <div class="feature-icon">⚡</div>
+                <h3>Automatyzacja</h3>
+                <p>Zautomatyzuj powtarzalne zadania i skup się na tym, co naprawdę ważne dla Twojego biznesu.</p>
+            </div>
+            
+            <div class="feature-card" data-track-view="feature-team">
+                <div class="feature-icon">👥</div>
+                <h3>Praca zespołowa</h3>
+                <p>Współpracuj z zespołem w czasie rzeczywistym. Integracja ze Slack, Teams i więcej.</p>
+            </div>
+            
+            <div class="feature-card" data-track-view="feature-security">
+                <div class="feature-icon">🔒</div>
+                <h3>Bezpieczeństwo</h3>
+                <p>Szyfrowanie end-to-end i zgodność z GDPR. Twoje dane są bezpieczne.</p>
+            </div>
+            
+            <div class="feature-card" data-track-view="feature-integrations">
+                <div class="feature-icon">🔌</div>
+                <h3>Integracje</h3>
+                <p>Połącz z ponad 200 narzędziami. API REST i webhooks dla zaawansowanych.</p>
+            </div>
+            
+            <div class="feature-card" data-track-view="feature-support">
+                <div class="feature-icon">💬</div>
+                <h3>Wsparcie 24/7</h3>
+                <p>Dedykowany zespół wsparcia gotowy pomóc o każdej porze dnia i nocy.</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Statystyki -->
+    <section class="stats" id="stats" data-track-view="stats-section">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <h3>10K+</h3>
+                <p>Aktywnych użytkowników</p>
+            </div>
+            <div class="stat-item">
+                <h3>98%</h3>
+                <p>Zadowolonych klientów</p>
+            </div>
+            <div class="stat-item">
+                <h3>150+</h3>
+                <p>Krajów</p>
+            </div>
+            <div class="stat-item">
+                <h3>24/7</h3>
+                <p>Dostępność</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Kontakt -->
+    <section class="contact" id="contact" data-track-view="contact-section">
+        <h2>Porozmawiajmy!</h2>
+        <p>Masz pytania? Chętnie odpowiemy na każde z nich.</p>
+        <form class="contact-form" id="contactForm">
+            <input type="text" id="nameInput" placeholder="Twoje imię" required data-track-focus="name-input">
+            <input type="email" id="emailInput" placeholder="Email" required data-track-focus="email-input">
+            <input type="text" id="companyInput" placeholder="Firma (opcjonalnie)" data-track-focus="company-input">
+            <textarea id="messageInput" placeholder="Twoja wiadomość..." required data-track-focus="message-input"></textarea>
+            <button type="submit" data-track="contact-submit">Wyślij wiadomość ✉️</button>
+        </form>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 StartupLab - Wszystkie prawa zastrzeżone</p>
+        <p style="margin-top: 15px;">
+            🔍 Ta strona jest śledzona przez <a href="/dashboard">User Activity Tracker</a>
+        </p>
+    </footer>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Tracker - połączenie z serwerem inwigilatora -->
+    <script src="/tracker.js" data-site-id="demo" data-endpoint="http://localhost:3000/api" data-debug="true" async></script>
+    
+    <script>
+        // Formularz kontaktowy
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const data = {
+                name: document.getElementById('nameInput').value,
+                email: document.getElementById('emailInput').value,
+                company: document.getElementById('companyInput').value,
+                message: document.getElementById('messageInput').value
+            };
+            
+            console.log('📧 Formularz kontaktowy:', data);
+            showToast('✅ Wiadomość wysłana! Odpowiemy w ciągu 24h.');
+            this.reset();
+        });
+        
+        // Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Symulowane logi
+        console.log('🚀 StartupLab v1.5 załadowany');
+        console.info('📊 Ładowanie analityki...');
+        
+        setTimeout(() => {
+            console.log('✅ Wszystkie moduły załadowane');
+            console.log('👤 Sesja gościa rozpoczęta');
+        }, 1000);
+        
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

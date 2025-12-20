@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechShop - Sklep z Elektroniką</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+        
+        /* Nagłówek */
+        header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #e94560;
+        }
+        
+        .logo {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #e94560;
+        }
+        
+        .logo span { color: #fff; }
+        
+        nav { display: flex; gap: 30px; }
+        
+        nav a {
+            color: #888;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        nav a:hover { color: #e94560; }
+        
+        .cart-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        
+        .cart-count {
+            background: #fff;
+            color: #e94560;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            padding: 80px 40px;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.2em;
+            color: #888;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .search-box {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-box input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: white;
+            font-size: 1em;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .search-box button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Produkty */
+        .products {
+            padding: 60px 40px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .products h2 {
+            font-size: 2em;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        
+        .product-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #333;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(233, 69, 96, 0.2);
+        }
+        
+        .product-image {
+            height: 200px;
+            background: linear-gradient(135deg, #2a2a4a 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-info h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .product-info p {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .product-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #e94560;
+            margin-bottom: 15px;
+        }
+        
+        .add-to-cart {
+            width: 100%;
+            background: transparent;
+            border: 2px solid #e94560;
+            color: #e94560;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .add-to-cart:hover {
+            background: #e94560;
+            color: white;
+        }
+        
+        /* Newsletter */
+        .newsletter {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            padding: 60px 40px;
+            text-align: center;
+        }
+        
+        .newsletter h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .newsletter p {
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 30px;
+        }
+        
+        .newsletter-form {
+            max-width: 500px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .newsletter-form input {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .newsletter-form button {
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            padding: 40px;
+            text-align: center;
+            color: #666;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #16a34a;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Nagłówek -->
+    <header>
+        <div class="logo">Tech<span>Shop</span></div>
+        <nav>
+            <a href="#" data-track="nav-home">Strona główna</a>
+            <a href="#" data-track="nav-products">Produkty</a>
+            <a href="#" data-track="nav-deals">Promocje</a>
+            <a href="#" data-track="nav-contact">Kontakt</a>
+        </nav>
+        <button class="cart-btn" data-track="open-cart">
+            🛒 Koszyk <span class="cart-count" id="cartCount">0</span>
+        </button>
+    </header>
+    
+    <!-- Hero -->
+    <section class="hero" data-track-view="hero-section">
+        <h1>🔥 Najnowsza Elektronika</h1>
+        <p>Odkryj najlepsze oferty na smartfony, laptopy, akcesoria i więcej. Darmowa dostawa od 200 zł!</p>
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Szukaj produktów..." data-track-focus="search-input">
+            <button data-track="search-submit">Szukaj</button>
+        </div>
+    </section>
+    
+    <!-- Produkty -->
+    <section class="products" data-track-view="products-section">
+        <h2>🛍️ Popularne Produkty</h2>
+        <div class="products-grid">
+            <div class="product-card" data-track-view="product-iphone">
+                <div class="product-image">📱</div>
+                <div class="product-info">
+                    <h3>iPhone 15 Pro Max</h3>
+                    <p>Najnowszy flagowiec Apple z chipem A17 Pro</p>
+                    <div class="product-price">5 999 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-iphone" data-product="iPhone 15 Pro Max" data-price="5999">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card" data-track-view="product-macbook">
+                <div class="product-image">💻</div>
+                <div class="product-info">
+                    <h3>MacBook Pro 14"</h3>
+                    <p>M3 Pro, 18GB RAM, 512GB SSD</p>
+                    <div class="product-price">9 499 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-macbook" data-product="MacBook Pro 14" data-price="9499">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card" data-track-view="product-airpods">
+                <div class="product-image">🎧</div>
+                <div class="product-info">
+                    <h3>AirPods Pro 2</h3>
+                    <p>Aktywna redukcja szumów, USB-C</p>
+                    <div class="product-price">1 199 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-airpods" data-product="AirPods Pro 2" data-price="1199">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card" data-track-view="product-watch">
+                <div class="product-image">⌚</div>
+                <div class="product-info">
+                    <h3>Apple Watch Ultra 2</h3>
+                    <p>Tytanowa koperta, GPS + Cellular</p>
+                    <div class="product-price">4 299 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-watch" data-product="Apple Watch Ultra 2" data-price="4299">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card" data-track-view="product-samsung">
+                <div class="product-image">📱</div>
+                <div class="product-info">
+                    <h3>Samsung Galaxy S24 Ultra</h3>
+                    <p>AI Features, S-Pen w zestawie</p>
+                    <div class="product-price">5 499 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-samsung" data-product="Samsung Galaxy S24 Ultra" data-price="5499">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+            
+            <div class="product-card" data-track-view="product-ps5">
+                <div class="product-image">🎮</div>
+                <div class="product-info">
+                    <h3>PlayStation 5 Slim</h3>
+                    <p>Konsola nowej generacji, 1TB SSD</p>
+                    <div class="product-price">2 299 zł</div>
+                    <button class="add-to-cart" data-track="add-to-cart-ps5" data-product="PlayStation 5 Slim" data-price="2299">
+                        Dodaj do koszyka
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Newsletter -->
+    <section class="newsletter" data-track-view="newsletter-section">
+        <h2>📧 Zapisz się do newslettera</h2>
+        <p>Otrzymuj informacje o promocjach i nowościach jako pierwszy!</p>
+        <form class="newsletter-form" id="newsletterForm">
+            <input type="email" id="emailInput" placeholder="Twój adres email" required>
+            <button type="submit" data-track="newsletter-submit">Zapisz się</button>
+        </form>
+    </section>
+    
+    <!-- Footer -->
+    <footer>
+        <p>© 2024 TechShop - Wszystkie prawa zastrzeżone</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">
+            🔍 Ta strona jest śledzona przez User Activity Tracker
+        </p>
+    </footer>
+    
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+    
+    <!-- Tracker - połączenie z serwerem inwigilatora -->
+    <script src="/tracker.js" data-site-id="shop" data-endpoint="http://localhost:3000/api" data-debug="true" async></script>
+    
+    <script>
+        // Symulacja sklepu
+        let cartCount = 0;
+        
+        // Dodawanie do koszyka
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const product = this.dataset.product;
+                const price = this.dataset.price;
+                
+                cartCount++;
+                document.getElementById('cartCount').textContent = cartCount;
+                
+                // Symuluj request API
+                console.log('🛒 Dodano do koszyka:', { product, price, cartTotal: cartCount });
+                
+                showToast(`✅ Dodano "${product}" do koszyka!`);
+            });
+        });
+        
+        // Newsletter
+        document.getElementById('newsletterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('emailInput').value;
+            console.log('📧 Newsletter signup:', email);
+            showToast('✅ Dziękujemy za zapisanie się!');
+            this.reset();
+        });
+        
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+        
+        // Symulowane logi (przechwycone przez tracker)
+        console.log('🛒 TechShop v2.1 załadowany');
+        console.info('📦 Ładowanie katalogu produktów...');
+        
+        setTimeout(() => {
+            console.log('✅ Załadowano 6 produktów');
+            console.log('👤 Sesja użytkownika aktywna');
+        }, 1000);
+    </script>
+</body>
+</html>
+
