@@ -1,154 +1,181 @@
-import Database from 'better-sqlite3';
 import path from 'path';
+import { execSync } from 'child_process';
 
 // Typy dla bazy danych
 export interface Event {
-    id: string;
-    timestamp: string;
-    site_id: string;
-    session_id: string;
-    visitor_id: string;
-    event_type: string;
-    url: string | null;
-    path: string | null;
-    hostname: string | null;
-    title: string | null;
-    referrer: string | null;
-    data: string | null;
-    ip_hash: string | null;
-    created_at: string;
+  id: string;
+  timestamp: string;
+  site_id: string;
+  session_id: string;
+  visitor_id: string;
+  event_type: string;
+  url: string | null;
+  path: string | null;
+  hostname: string | null;
+  title: string | null;
+  referrer: string | null;
+  data: string | null;
+  ip_hash: string | null;
+  created_at: string;
 }
 
 export interface Session {
-    session_id: string;
-    visitor_id: string;
-    site_id: string;
-    started_at: string;
-    last_activity: string | null;
-    device_info: string | null;
-    utm_params: string | null;
-    ip_hash: string | null;
-    page_count: number;
-    event_count: number;
+  session_id: string;
+  visitor_id: string;
+  site_id: string;
+  started_at: string;
+  last_activity: string | null;
+  device_info: string | null;
+  utm_params: string | null;
+  ip_hash: string | null;
+  page_count: number;
+  event_count: number;
 }
 
 export interface Visitor {
-    visitor_id: string;
-    first_seen: string;
-    last_seen: string | null;
-    session_count: number;
-    total_pageviews: number;
+  visitor_id: string;
+  first_seen: string;
+  last_seen: string | null;
+  session_count: number;
+  total_pageviews: number;
 }
 
 // Interfejs dla logów komunikacji
 export interface CommunicationLog {
-    id: string;
-    timestamp: string;
-    site_id: string;
-    origin: string | null;
-    ip: string;
-    method: string;
-    endpoint: string;
-    status_code: number;
-    request_size: number;
-    response_size: number;
-    duration_ms: number;
-    events_count: number;
-    error_message: string | null;
-    user_agent: string | null;
-    session_id: string | null;
-    visitor_id: string | null;
+  id: string;
+  timestamp: string;
+  site_id: string;
+  origin: string | null;
+  ip: string;
+  method: string;
+  endpoint: string;
+  status_code: number;
+  request_size: number;
+  response_size: number;
+  duration_ms: number;
+  events_count: number;
+  error_message: string | null;
+  user_agent: string | null;
+  session_id: string | null;
+  visitor_id: string | null;
 }
 
 // Interfejs dla wysłanych formularzy
 export interface FormSubmission {
-    id: string;
-    timestamp: string;
-    site_id: string;
-    session_id: string;
-    visitor_id: string;
-    form_id: string | null;
-    form_name: string | null;
-    form_action: string | null;
-    page_url: string | null;
-    page_path: string | null;
-    form_data: string; // JSON z danymi formularza
-    fill_duration: number; // Czas wypełniania w sekundach
-    fields_count: number;
-    has_files: boolean;
-    created_at: string;
+  id: string;
+  timestamp: string;
+  site_id: string;
+  session_id: string;
+  visitor_id: string;
+  form_id: string | null;
+  form_name: string | null;
+  form_action: string | null;
+  page_url: string | null;
+  page_path: string | null;
+  form_data: string; // JSON z danymi formularza
+  fill_duration: number; // Czas wypełniania w sekundach
+  fields_count: number;
+  has_files: boolean;
+  created_at: string;
 }
 
 // Interfejs dla przesłanych plików
 export interface UploadedFile {
-    id: string;
-    timestamp: string;
-    site_id: string;
-    session_id: string;
-    visitor_id: string;
-    form_submission_id: string | null;
-    field_name: string | null;
-    file_name: string;
-    file_type: string | null;
-    file_size: number;
-    file_extension: string | null;
-    file_content: Buffer | null; // Opcjonalna zawartość pliku (base64)
-    page_url: string | null;
-    page_path: string | null;
-    created_at: string;
+  id: string;
+  timestamp: string;
+  site_id: string;
+  session_id: string;
+  visitor_id: string;
+  form_submission_id: string | null;
+  field_name: string | null;
+  file_name: string;
+  file_type: string | null;
+  file_size: number;
+  file_extension: string | null;
+  file_content: Buffer | null; // Opcjonalna zawartość pliku (base64)
+  page_url: string | null;
+  page_path: string | null;
+  created_at: string;
 }
 
 // Interfejs dla ustawień śledzenia (inwigilacji)
 export interface TrackingSetting {
-    id: number;
-    setting_type: 'global' | 'site';  // 'global' = cały system, 'site' = per projekt
-    site_id: string | null;           // NULL dla global, site_id dla site
-    enabled: boolean;                  // Czy śledzenie włączone
-    updated_at: string;
-    updated_by: string | null;         // Kto zmienił (opcjonalnie)
+  id: number;
+  setting_type: 'global' | 'site';  // 'global' = cały system, 'site' = per projekt
+  site_id: string | null;           // NULL dla global, site_id dla site
+  enabled: boolean;                  // Czy śledzenie włączone
+  updated_at: string;
+  updated_by: string | null;         // Kto zmienił (opcjonalnie)
 }
 
 // Interfejs dla zdalnych komend (Remote Control / "Straszak")
 export interface RemoteCommand {
-    id: string;
-    created_at: string;
-    site_id: string;                   // Docelowa strona
-    session_id: string | null;         // Konkretna sesja (opcjonalnie, NULL = wszystkie)
-    command_type: string;              // Typ komendy: 'scare', 'hide_cursor', 'block_console', etc.
-    payload: string;                   // JSON z parametrami komendy
-    executed: boolean;                 // Czy komenda została wykonana
-    executed_at: string | null;        // Kiedy została wykonana
-    expires_at: string | null;         // Kiedy wygasa (opcjonalnie)
-    created_by: string | null;         // Kto wysłał komendę
+  id: string;
+  created_at: string;
+  site_id: string;                   // Docelowa strona
+  session_id: string | null;         // Konkretna sesja (opcjonalnie, NULL = wszystkie)
+  command_type: string;              // Typ komendy: 'scare', 'hide_cursor', 'block_console', etc.
+  payload: string;                   // JSON z parametrami komendy
+  executed: boolean;                 // Czy komenda została wykonana
+  executed_at: string | null;        // Kiedy została wykonana
+  expires_at: string | null;         // Kiedy wygasa (opcjonalnie)
+  created_by: string | null;         // Kto wysłał komendę
 }
 
 // Singleton dla połączenia z bazą
-let db: Database.Database | null = null;
+let db: any = null;
 
-export function getDb(): Database.Database {
-    if (!db) {
-        const dbPath = process.env.TRACKER_DB || path.join(process.cwd(), 'tracker.db');
-        db = new Database(dbPath);
-        db.pragma('journal_mode = WAL');
-        db.pragma('synchronous = NORMAL');
-        db.pragma('cache_size = 10000');
-        db.pragma('temp_store = MEMORY');
-        initDb(db);
+export function getDb(): any {
+  if (!db) {
+    const dbPath = process.env.TRACKER_DB || path.join(process.cwd(), 'tracker.db');
+
+    // Dynamic loading of better-sqlite3 to handle version mismatches gracefully
+    let DatabaseClass;
+    try {
+      DatabaseClass = require('better-sqlite3');
+    } catch (error: any) {
+      // Check for NODE_MODULE_VERSION mismatch error
+      // Sprawdzenie czy wystąpił błąd niezgodności wersji Node.js
+      if (error.message && error.message.includes('NODE_MODULE_VERSION')) {
+        console.error('\n🔴 BŁĄD KRYTYCZNY: Wykryto niezgodność wersji Node.js z modułem bazy danych (better-sqlite3).');
+        console.log('🛠️  Próba automatycznej naprawy problemu (uruchamiam npm rebuild)...');
+
+        try {
+          // Execute rebuild synchronously
+          execSync('npm rebuild better-sqlite3', { stdio: 'inherit' });
+          console.log('\n✅ Naprawa zakończona pomyślnie!');
+          console.log('⚠️  ABY ZASTOSOWAĆ ZMIANY, KONIECZNY JEST RESTART SERWERA.');
+          console.log('🔄 Zrestartuj aplikację (Ctrl+C, a następnie npm run dev).\n');
+          process.exit(1); // Exit to force user to restart, as new binary won't be loaded in current process
+        } catch (rebuildError) {
+          console.error('❌ Automatyczna naprawa nie powiodła się. Spróbuj ręcznie uruchomić: npm rebuild better-sqlite3', rebuildError);
+          throw error;
+        }
+      }
+      throw error;
     }
-    return db;
+
+    db = new DatabaseClass(dbPath);
+    db.pragma('journal_mode = WAL');
+    db.pragma('synchronous = NORMAL');
+    db.pragma('cache_size = 10000');
+    db.pragma('temp_store = MEMORY');
+    initDb(db);
+  }
+  return db;
 }
 
 // Funkcja do zamykania połączenia (dla graceful shutdown)
 export function closeDb(): void {
-    if (db) {
-        db.close();
-        db = null;
-    }
+  if (db) {
+    db.close();
+    db = null;
+  }
 }
 
-function initDb(database: Database.Database) {
-    // Tabela eventów
-    database.exec(`
+function initDb(database: any) {
+  // Tabela eventów
+  database.exec(`
     CREATE TABLE IF NOT EXISTS events (
       id TEXT PRIMARY KEY,
       timestamp TEXT NOT NULL,
@@ -167,8 +194,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Tabela sesji
-    database.exec(`
+  // Tabela sesji
+  database.exec(`
     CREATE TABLE IF NOT EXISTS sessions (
       session_id TEXT PRIMARY KEY,
       visitor_id TEXT NOT NULL,
@@ -183,8 +210,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Tabela odwiedzających
-    database.exec(`
+  // Tabela odwiedzających
+  database.exec(`
     CREATE TABLE IF NOT EXISTS visitors (
       visitor_id TEXT PRIMARY KEY,
       first_seen TEXT NOT NULL,
@@ -194,8 +221,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Indeksy podstawowe
-    database.exec(`
+  // Indeksy podstawowe
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_events_timestamp ON events(timestamp);
     CREATE INDEX IF NOT EXISTS idx_events_site ON events(site_id);
     CREATE INDEX IF NOT EXISTS idx_events_session ON events(session_id);
@@ -204,8 +231,8 @@ function initDb(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_sessions_visitor ON sessions(visitor_id);
   `);
 
-    // Indeksy złożone dla lepszej wydajności zapytań
-    database.exec(`
+  // Indeksy złożone dla lepszej wydajności zapytań
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_events_timestamp_site ON events(timestamp, site_id);
     CREATE INDEX IF NOT EXISTS idx_events_session_created ON events(session_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_events_site_type_timestamp ON events(site_id, event_type, timestamp);
@@ -213,8 +240,8 @@ function initDb(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_sessions_started_at ON sessions(started_at);
   `);
 
-    // Tabela logów komunikacji (debugger)
-    database.exec(`
+  // Tabela logów komunikacji (debugger)
+  database.exec(`
     CREATE TABLE IF NOT EXISTS communication_logs (
       id TEXT PRIMARY KEY,
       timestamp TEXT NOT NULL,
@@ -236,8 +263,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Indeksy dla logów komunikacji
-    database.exec(`
+  // Indeksy dla logów komunikacji
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON communication_logs(timestamp);
     CREATE INDEX IF NOT EXISTS idx_logs_site ON communication_logs(site_id);
     CREATE INDEX IF NOT EXISTS idx_logs_status ON communication_logs(status_code);
@@ -245,8 +272,8 @@ function initDb(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_logs_site_timestamp ON communication_logs(site_id, timestamp);
   `);
 
-    // Tabela wysłanych formularzy
-    database.exec(`
+  // Tabela wysłanych formularzy
+  database.exec(`
     CREATE TABLE IF NOT EXISTS form_submissions (
       id TEXT PRIMARY KEY,
       timestamp TEXT NOT NULL,
@@ -266,8 +293,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Tabela przesłanych plików
-    database.exec(`
+  // Tabela przesłanych plików
+  database.exec(`
     CREATE TABLE IF NOT EXISTS uploaded_files (
       id TEXT PRIMARY KEY,
       timestamp TEXT NOT NULL,
@@ -288,8 +315,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Indeksy dla formularzy
-    database.exec(`
+  // Indeksy dla formularzy
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_forms_timestamp ON form_submissions(timestamp);
     CREATE INDEX IF NOT EXISTS idx_forms_site ON form_submissions(site_id);
     CREATE INDEX IF NOT EXISTS idx_forms_session ON form_submissions(session_id);
@@ -297,8 +324,8 @@ function initDb(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_forms_site_timestamp ON form_submissions(site_id, timestamp);
   `);
 
-    // Indeksy dla plików
-    database.exec(`
+  // Indeksy dla plików
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_files_timestamp ON uploaded_files(timestamp);
     CREATE INDEX IF NOT EXISTS idx_files_site ON uploaded_files(site_id);
     CREATE INDEX IF NOT EXISTS idx_files_session ON uploaded_files(session_id);
@@ -306,8 +333,8 @@ function initDb(database: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_files_site_timestamp ON uploaded_files(site_id, timestamp);
   `);
 
-    // Tabela ustawień śledzenia (mechanizm wł/wył inwigilacji)
-    database.exec(`
+  // Tabela ustawień śledzenia (mechanizm wł/wył inwigilacji)
+  database.exec(`
     CREATE TABLE IF NOT EXISTS tracking_settings (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       setting_type TEXT NOT NULL CHECK(setting_type IN ('global', 'site')),
@@ -319,20 +346,20 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Domyślne ustawienie globalne (włączone) jeśli nie istnieje
-    database.exec(`
+  // Domyślne ustawienie globalne (włączone) jeśli nie istnieje
+  database.exec(`
     INSERT OR IGNORE INTO tracking_settings (setting_type, site_id, enabled, updated_at)
     VALUES ('global', NULL, 1, CURRENT_TIMESTAMP)
   `);
 
-    // Indeksy dla ustawień śledzenia
-    database.exec(`
+  // Indeksy dla ustawień śledzenia
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_tracking_site ON tracking_settings(site_id);
     CREATE INDEX IF NOT EXISTS idx_tracking_type ON tracking_settings(setting_type);
   `);
 
-    // Tabela historii czyszczenia danych
-    database.exec(`
+  // Tabela historii czyszczenia danych
+  database.exec(`
     CREATE TABLE IF NOT EXISTS cleanup_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       timestamp TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -351,14 +378,14 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Indeksy dla historii czyszczenia
-    database.exec(`
+  // Indeksy dla historii czyszczenia
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_cleanup_timestamp ON cleanup_history(timestamp);
     CREATE INDEX IF NOT EXISTS idx_cleanup_mode ON cleanup_history(mode);
   `);
 
-    // Tabela zdalnych komend (Remote Control / "Straszak")
-    database.exec(`
+  // Tabela zdalnych komend (Remote Control / "Straszak")
+  database.exec(`
     CREATE TABLE IF NOT EXISTS remote_commands (
       id TEXT PRIMARY KEY,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -373,8 +400,8 @@ function initDb(database: Database.Database) {
     )
   `);
 
-    // Indeksy dla zdalnych komend
-    database.exec(`
+  // Indeksy dla zdalnych komend
+  database.exec(`
     CREATE INDEX IF NOT EXISTS idx_commands_site ON remote_commands(site_id);
     CREATE INDEX IF NOT EXISTS idx_commands_session ON remote_commands(session_id);
     CREATE INDEX IF NOT EXISTS idx_commands_type ON remote_commands(command_type);
@@ -391,62 +418,62 @@ function initDb(database: Database.Database) {
  * Zwraca false jeśli globalnie wyłączone LUB site_id jest wyłączony
  */
 export function isTrackingEnabled(siteId: string): boolean {
-    const db = getDb();
-    
-    // WYKLUCZENIE: Nigdy nie śledź samego dashboardu - to bez sensu
-    if (siteId.startsWith('dashboard') || siteId.includes('/dashboard')) {
-        return false;
-    }
-    
-    // Sprawdź ustawienie globalne
-    const globalSetting = db.prepare(`
+  const db = getDb();
+
+  // WYKLUCZENIE: Nigdy nie śledź samego dashboardu - to bez sensu
+  if (siteId.startsWith('dashboard') || siteId.includes('/dashboard')) {
+    return false;
+  }
+
+  // Sprawdź ustawienie globalne
+  const globalSetting = db.prepare(`
         SELECT enabled FROM tracking_settings 
         WHERE setting_type = 'global' AND site_id IS NULL
     `).get() as { enabled: number } | undefined;
-    
-    // Jeśli globalnie wyłączone - zwróć false
-    if (globalSetting && globalSetting.enabled === 0) {
-        return false;
-    }
-    
-    // Sprawdź ustawienie dla konkretnego site_id
-    const siteSetting = db.prepare(`
+
+  // Jeśli globalnie wyłączone - zwróć false
+  if (globalSetting && globalSetting.enabled === 0) {
+    return false;
+  }
+
+  // Sprawdź ustawienie dla konkretnego site_id
+  const siteSetting = db.prepare(`
         SELECT enabled FROM tracking_settings 
         WHERE setting_type = 'site' AND site_id = ?
     `).get(siteId) as { enabled: number } | undefined;
-    
-    // Jeśli site_id ma jawnie wyłączone - zwróć false
-    if (siteSetting && siteSetting.enabled === 0) {
-        return false;
-    }
-    
-    // Domyślnie włączone
-    return true;
+
+  // Jeśli site_id ma jawnie wyłączone - zwróć false
+  if (siteSetting && siteSetting.enabled === 0) {
+    return false;
+  }
+
+  // Domyślnie włączone
+  return true;
 }
 
 /**
  * Pobiera wszystkie ustawienia śledzenia
  */
 export function getTrackingSettings(): TrackingSetting[] {
-    const db = getDb();
-    const settings = db.prepare(`
+  const db = getDb();
+  const settings = db.prepare(`
         SELECT id, setting_type, site_id, enabled, updated_at, updated_by
         FROM tracking_settings
         ORDER BY setting_type DESC, site_id ASC
     `).all() as TrackingSetting[];
-    
-    return settings.map(s => ({
-        ...s,
-        enabled: Boolean(s.enabled)
-    }));
+
+  return settings.map(s => ({
+    ...s,
+    enabled: Boolean(s.enabled)
+  }));
 }
 
 /**
  * Ustawia status śledzenia globalnego
  */
 export function setGlobalTrackingEnabled(enabled: boolean, updatedBy?: string): void {
-    const db = getDb();
-    db.prepare(`
+  const db = getDb();
+  db.prepare(`
         UPDATE tracking_settings 
         SET enabled = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
         WHERE setting_type = 'global' AND site_id IS NULL
@@ -457,8 +484,8 @@ export function setGlobalTrackingEnabled(enabled: boolean, updatedBy?: string): 
  * Ustawia status śledzenia dla konkretnego site_id
  */
 export function setSiteTrackingEnabled(siteId: string, enabled: boolean, updatedBy?: string): void {
-    const db = getDb();
-    db.prepare(`
+  const db = getDb();
+  db.prepare(`
         INSERT INTO tracking_settings (setting_type, site_id, enabled, updated_at, updated_by)
         VALUES ('site', ?, ?, CURRENT_TIMESTAMP, ?)
         ON CONFLICT(setting_type, site_id) 
@@ -470,8 +497,8 @@ export function setSiteTrackingEnabled(siteId: string, enabled: boolean, updated
  * Usuwa ustawienie dla konkretnego site_id (przywraca domyślne zachowanie)
  */
 export function removeSiteTrackingSetting(siteId: string): void {
-    const db = getDb();
-    db.prepare(`
+  const db = getDb();
+  db.prepare(`
         DELETE FROM tracking_settings 
         WHERE setting_type = 'site' AND site_id = ?
     `).run(siteId);
@@ -481,14 +508,14 @@ export function removeSiteTrackingSetting(siteId: string): void {
  * Pobiera listę wszystkich śledzonych site_id z bazy
  */
 export function getAllTrackedSites(): string[] {
-    const db = getDb();
-    const sites = db.prepare(`
+  const db = getDb();
+  const sites = db.prepare(`
         SELECT DISTINCT site_id FROM sessions 
         WHERE site_id IS NOT NULL
         ORDER BY site_id ASC
     `).all() as { site_id: string }[];
-    
-    return sites.map(s => s.site_id);
+
+  return sites.map(s => s.site_id);
 }
 
 export default getDb;
