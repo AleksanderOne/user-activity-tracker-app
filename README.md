@@ -79,7 +79,7 @@ Zbiera szczegółowe dane o zachowaniu użytkowników na stronach internetowych 
 ┌─────────────────────────────────────────────────────────────────┐
 │                         SERWER (Next.js API)                    │
 ├─────────────────────────────────────────────────────────────────┤
-│  middleware.ts                                                  │
+│  proxy.ts                                                       │
 │  ├── CORS headers                                               │
 │  ├── JWT auth check (dashboard routes)                          │
 │  └── Redirect logic                                             │
@@ -738,7 +738,7 @@ user-activity-tracker-app/
 ├── public/
 │   ├── tracker.js                    # Skrypt trackera (klient)
 │   └── demo.html                     # Statyczna strona demo
-├── middleware.ts                     # CORS + auth middleware
+├── proxy.ts                          # CORS + auth proxy
 ├── tracker.db                        # Baza SQLite (auto-generated)
 ├── package.json
 ├── tsconfig.json
