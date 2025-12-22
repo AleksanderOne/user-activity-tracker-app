@@ -16,6 +16,7 @@ interface CleanupHistoryItem {
     communication_logs_deleted: number;
     form_submissions_deleted: number;
     uploaded_files_deleted: number;
+    remote_commands_deleted: number;
     total_deleted: number;
     filters: string | null;
     message: string | null;
@@ -40,6 +41,7 @@ interface CleanupStats {
         communication_logs: number;
         form_submissions: number;
         uploaded_files: number;
+        remote_commands: number;
     };
     sites: Array<{ site_id: string; hostname: string | null; session_count: number }>;
     ips: Array<{ ip: string; request_count: number }>;
@@ -76,6 +78,7 @@ interface CleanupResult {
         communication_logs: number;
         form_submissions: number;
         uploaded_files: number;
+        remote_commands: number;
     };
     message: string;
 }
@@ -570,6 +573,13 @@ export default function CleanupPage() {
                         >
                             <div className="text-3xl font-bold text-pink-400 group-hover:scale-110 transition-transform">{formatNumber(stats?.stats.uploaded_files || 0)}</div>
                             <div className="text-xs text-slate-400 mt-1 group-hover:text-pink-300">Pliki →</div>
+                        </Link>
+                        <Link 
+                            href="/dashboard/commands"
+                            className="bg-slate-800/50 p-4 rounded-lg text-center border border-slate-700 hover:bg-slate-700/50 hover:border-orange-500/50 transition-all cursor-pointer group"
+                        >
+                            <div className="text-3xl font-bold text-orange-400 group-hover:scale-110 transition-transform">{formatNumber(stats?.stats.remote_commands || 0)}</div>
+                            <div className="text-xs text-slate-400 mt-1 group-hover:text-orange-300">Komendy →</div>
                         </Link>
                     </div>
                 </div>

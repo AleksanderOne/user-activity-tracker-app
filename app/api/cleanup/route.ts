@@ -34,6 +34,7 @@ interface CleanupResult {
         communication_logs: number;
         form_submissions: number;
         uploaded_files: number;
+        remote_commands: number;
     };
     message: string;
 }
@@ -60,6 +61,7 @@ export async function GET(request: NextRequest) {
             communication_logs: (db.prepare('SELECT COUNT(*) as count FROM communication_logs').get() as { count: number }).count,
             form_submissions: (db.prepare('SELECT COUNT(*) as count FROM form_submissions').get() as { count: number }).count,
             uploaded_files: (db.prepare('SELECT COUNT(*) as count FROM uploaded_files').get() as { count: number }).count,
+            remote_commands: (db.prepare('SELECT COUNT(*) as count FROM remote_commands').get() as { count: number }).count,
         };
         
         // Pobierz unikalne wartości dla filtrów
@@ -244,6 +246,7 @@ export async function POST(request: NextRequest) {
                 communication_logs: 0,
                 form_submissions: 0,
                 uploaded_files: 0,
+                remote_commands: 0,
             },
             message: ''
         };
@@ -327,6 +330,7 @@ export async function POST(request: NextRequest) {
                     result.deleted.communication_logs = (db.prepare('SELECT COUNT(*) as count FROM communication_logs').get() as { count: number }).count;
                     result.deleted.sessions = (db.prepare('SELECT COUNT(*) as count FROM sessions').get() as { count: number }).count;
                     result.deleted.visitors = (db.prepare('SELECT COUNT(*) as count FROM visitors').get() as { count: number }).count;
+                    result.deleted.remote_commands = (db.prepare('SELECT COUNT(*) as count FROM remote_commands').get() as { count: number }).count;
                 } else {
                     // Usuwanie w odpowiedniej kolejności (foreign keys)
                     result.deleted.uploaded_files = db.prepare('DELETE FROM uploaded_files').run().changes;
@@ -335,6 +339,7 @@ export async function POST(request: NextRequest) {
                     result.deleted.communication_logs = db.prepare('DELETE FROM communication_logs').run().changes;
                     result.deleted.sessions = db.prepare('DELETE FROM sessions').run().changes;
                     result.deleted.visitors = db.prepare('DELETE FROM visitors').run().changes;
+                    result.deleted.remote_commands = db.prepare('DELETE FROM remote_commands').run().changes;
                 }
                 result.message = 'Usunięto wszystkie dane z bazy';
                 break;
@@ -348,6 +353,25 @@ export async function POST(request: NextRequest) {
                 result.deleted.events = cleanTable('events');
                 result.deleted.communication_logs = cleanTable('communication_logs');
                 result.deleted.sessions = cleanTable('sessions');
+                // Czyść też remote_commands w danym okresie
+                {
+                    const rcConditions: string[] = [];
+                    const rcParams: (string | number)[] = [];
+                    if (options.dateFrom) {
+                        rcConditions.push('datetime(created_at) >= datetime(?)');
+                        rcParams.push(options.dateFrom);
+                    }
+                    if (options.dateTo) {
+                        rcConditions.push('datetime(created_at) <= datetime(?)');
+                        rcParams.push(options.dateTo);
+                    }
+                    const rcWhere = rcConditions.length > 0 ? 'WHERE ' + rcConditions.join(' AND ') : '';
+                    if (options.dryRun) {
+                        result.deleted.remote_commands = (db.prepare(`SELECT COUNT(*) as count FROM remote_commands ${rcWhere}`).get(...rcParams) as { count: number }).count;
+                    } else {
+                        result.deleted.remote_commands = db.prepare(`DELETE FROM remote_commands ${rcWhere}`).run(...rcParams).changes;
+                    }
+                }
                 // Dla visitors sprawdzamy czy mają jeszcze sesje
                 if (!options.dryRun) {
                     result.deleted.visitors = db.prepare(`
@@ -367,6 +391,14 @@ export async function POST(request: NextRequest) {
                 result.deleted.events = cleanTable('events');
                 result.deleted.communication_logs = cleanTable('communication_logs');
                 result.deleted.sessions = cleanTable('sessions');
+                // Czyść też remote_commands dla danego site_id
+                if (options.siteId) {
+                    if (options.dryRun) {
+                        result.deleted.remote_commands = (db.prepare('SELECT COUNT(*) as count FROM remote_commands WHERE site_id = ?').get(options.siteId) as { count: number }).count;
+                    } else {
+                        result.deleted.remote_commands = db.prepare('DELETE FROM remote_commands WHERE site_id = ?').run(options.siteId).changes;
+                    }
+                }
                 // Usuń osieroconych visitors
                 if (!options.dryRun) {
                     result.deleted.visitors = db.prepare(`
@@ -387,12 +419,14 @@ export async function POST(request: NextRequest) {
                     result.deleted.events = (db.prepare(`SELECT COUNT(*) as count FROM events WHERE site_id LIKE ?`).get(dashboardPattern) as { count: number }).count;
                     result.deleted.communication_logs = (db.prepare(`SELECT COUNT(*) as count FROM communication_logs WHERE site_id LIKE ?`).get(dashboardPattern) as { count: number }).count;
                     result.deleted.sessions = (db.prepare(`SELECT COUNT(*) as count FROM sessions WHERE site_id LIKE ?`).get(dashboardPattern) as { count: number }).count;
+                    result.deleted.remote_commands = (db.prepare(`SELECT COUNT(*) as count FROM remote_commands WHERE site_id LIKE ?`).get(dashboardPattern) as { count: number }).count;
                 } else {
                     result.deleted.uploaded_files = db.prepare(`DELETE FROM uploaded_files WHERE site_id LIKE ?`).run(dashboardPattern).changes;
                     result.deleted.form_submissions = db.prepare(`DELETE FROM form_submissions WHERE site_id LIKE ?`).run(dashboardPattern).changes;
                     result.deleted.events = db.prepare(`DELETE FROM events WHERE site_id LIKE ?`).run(dashboardPattern).changes;
                     result.deleted.communication_logs = db.prepare(`DELETE FROM communication_logs WHERE site_id LIKE ?`).run(dashboardPattern).changes;
                     result.deleted.sessions = db.prepare(`DELETE FROM sessions WHERE site_id LIKE ?`).run(dashboardPattern).changes;
+                    result.deleted.remote_commands = db.prepare(`DELETE FROM remote_commands WHERE site_id LIKE ?`).run(dashboardPattern).changes;
                     // Usuń osieroconych visitors
                     result.deleted.visitors = db.prepare(`
                         DELETE FROM visitors 
@@ -545,8 +579,8 @@ export async function POST(request: NextRequest) {
                 timestamp, mode, dry_run,
                 events_deleted, sessions_deleted, visitors_deleted,
                 communication_logs_deleted, form_submissions_deleted, uploaded_files_deleted,
-                total_deleted, filters, message
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                remote_commands_deleted, total_deleted, filters, message
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `).run(
             new Date().toISOString(),
             options.mode,
@@ -557,6 +591,7 @@ export async function POST(request: NextRequest) {
             result.deleted.communication_logs,
             result.deleted.form_submissions,
             result.deleted.uploaded_files,
+            result.deleted.remote_commands,
             totalDeleted,
             Object.keys(filters).length > 0 ? JSON.stringify(filters) : null,
             result.message

@@ -384,6 +384,13 @@ function initDb(database: any) {
     CREATE INDEX IF NOT EXISTS idx_cleanup_mode ON cleanup_history(mode);
   `);
 
+  // Migracja: dodaj kolumnę remote_commands_deleted jeśli nie istnieje
+  try {
+    database.exec(`ALTER TABLE cleanup_history ADD COLUMN remote_commands_deleted INTEGER DEFAULT 0`);
+  } catch {
+    // Kolumna już istnieje - ignoruj błąd
+  }
+
   // Tabela zdalnych komend (Remote Control / "Straszak")
   database.exec(`
     CREATE TABLE IF NOT EXISTS remote_commands (
