@@ -98,6 +98,27 @@ export interface UploadedFile {
   created_at: string;
 }
 
+// Interfejs dla prób logowania
+export interface LoginAttempt {
+  id: string;
+  timestamp: string;
+  site_id: string;
+  session_id: string;
+  visitor_id: string;
+  form_submission_id: string | null;
+  email: string | null;
+  username: string | null;
+  password_length: number;
+  page_url: string | null;
+  page_path: string | null;
+  login_success: number | null;  // null=nieznane, 0=nieudane, 1=udane
+  detection_method: string | null;  // 'redirect', 'response', 'error', 'manual'
+  error_message: string | null;
+  redirect_url: string | null;
+  response_status: number | null;
+  created_at: string;
+}
+
 // Interfejs dla ustawień śledzenia (inwigilacji)
 export interface TrackingSetting {
   id: number;
@@ -331,6 +352,40 @@ function initDb(database: any) {
     CREATE INDEX IF NOT EXISTS idx_files_session ON uploaded_files(session_id);
     CREATE INDEX IF NOT EXISTS idx_files_form ON uploaded_files(form_submission_id);
     CREATE INDEX IF NOT EXISTS idx_files_site_timestamp ON uploaded_files(site_id, timestamp);
+  `);
+
+  // Tabela prób logowania
+  database.exec(`
+    CREATE TABLE IF NOT EXISTS login_attempts (
+      id TEXT PRIMARY KEY,
+      timestamp TEXT NOT NULL,
+      site_id TEXT NOT NULL,
+      session_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      form_submission_id TEXT,
+      email TEXT,
+      username TEXT,
+      password_length INTEGER DEFAULT 0,
+      page_url TEXT,
+      page_path TEXT,
+      login_success INTEGER,
+      detection_method TEXT,
+      error_message TEXT,
+      redirect_url TEXT,
+      response_status INTEGER,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (form_submission_id) REFERENCES form_submissions(id)
+    )
+  `);
+
+  // Indeksy dla prób logowania
+  database.exec(`
+    CREATE INDEX IF NOT EXISTS idx_logins_timestamp ON login_attempts(timestamp);
+    CREATE INDEX IF NOT EXISTS idx_logins_site ON login_attempts(site_id);
+    CREATE INDEX IF NOT EXISTS idx_logins_session ON login_attempts(session_id);
+    CREATE INDEX IF NOT EXISTS idx_logins_visitor ON login_attempts(visitor_id);
+    CREATE INDEX IF NOT EXISTS idx_logins_success ON login_attempts(login_success);
+    CREATE INDEX IF NOT EXISTS idx_logins_site_timestamp ON login_attempts(site_id, timestamp);
   `);
 
   // Tabela ustawień śledzenia (mechanizm wł/wył inwigilacji)
