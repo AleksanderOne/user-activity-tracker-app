@@ -8,6 +8,7 @@ import { useRefresh } from '@/lib/contexts';
 interface SessionDetails {
     session_id: string;
     visitor_id: string;
+    site_id: string;
     started_at: string;
     last_activity: string;
     event_count: number;
@@ -152,6 +153,7 @@ export default function SessionsPage() {
     const [countryFilter, setCountryFilter] = useState('');
     const [browserFilter, setBrowserFilter] = useState('');
     const [platformFilter, setPlatformFilter] = useState('');
+    const [siteFilter, setSiteFilter] = useState('');
 
     // Widok i sortowanie
     const [viewMode, setViewMode] = useState<ViewMode>('table');
@@ -187,6 +189,7 @@ export default function SessionsPage() {
     const [uniqueCountries, setUniqueCountries] = useState<string[]>([]);
     const [uniqueBrowsers, setUniqueBrowsers] = useState<string[]>([]);
     const [uniquePlatforms, setUniquePlatforms] = useState<string[]>([]);
+    const [uniqueSites, setUniqueSites] = useState<string[]>([]);
 
     // Pobieranie sesji
     const fetchSessions = useCallback(async (isAutoRefresh = false) => {
@@ -222,16 +225,19 @@ export default function SessionsPage() {
             const countries = new Set<string>();
             const browsers = new Set<string>();
             const platforms = new Set<string>();
+            const sites = new Set<string>();
 
             (data.sessions || []).forEach((s: SessionDetails) => {
                 if (s.device_info?.location?.country) countries.add(s.device_info.location.country);
                 if (s.device_info?.browserName) browsers.add(s.device_info.browserName);
                 if (s.device_info?.platform) platforms.add(s.device_info.platform);
+                if (s.site_id) sites.add(s.site_id);
             });
 
             setUniqueCountries(Array.from(countries).sort());
             setUniqueBrowsers(Array.from(browsers).sort());
             setUniquePlatforms(Array.from(platforms).sort());
+            setUniqueSites(Array.from(sites).sort());
 
         } catch (err) {
             const msg = err instanceof Error ? err.message : 'Nieznany błąd';
@@ -286,6 +292,10 @@ export default function SessionsPage() {
             result = result.filter(s => s.device_info?.platform === platformFilter);
         }
 
+        if (siteFilter) {
+            result = result.filter(s => s.site_id === siteFilter);
+        }
+
         result.sort((a, b) => {
             let valA: string | number = '';
             let valB: string | number = '';
@@ -316,7 +326,7 @@ export default function SessionsPage() {
         });
 
         return result;
-    }, [sessions, searchTerm, minEvents, maxEvents, countryFilter, browserFilter, platformFilter, sortField, sortOrder]);
+    }, [sessions, searchTerm, minEvents, maxEvents, countryFilter, browserFilter, platformFilter, siteFilter, sortField, sortOrder]);
 
     const paginatedSessions = useMemo(() => {
         const start = page * pageSize;
@@ -378,6 +388,7 @@ export default function SessionsPage() {
         setCountryFilter('');
         setBrowserFilter('');
         setPlatformFilter('');
+        setSiteFilter('');
         setPage(0);
     };
 
@@ -516,10 +527,11 @@ export default function SessionsPage() {
     const exportToCSV = () => {
         setExporting(true);
         
-        const headers = ['ID Sesji', 'ID Użytkownika', 'Start', 'Ostatnia aktywność', 'Eventy', 'IP', 'Kraj', 'Miasto', 'Przeglądarka', 'Platforma', 'Rozdzielczość'];
+        const headers = ['ID Sesji', 'ID Użytkownika', 'Strona', 'Start', 'Ostatnia aktywność', 'Eventy', 'IP', 'Kraj', 'Miasto', 'Przeglądarka', 'Platforma', 'Rozdzielczość'];
         const rows = filteredSessions.map(s => [
             s.session_id,
             s.visitor_id,
+            s.site_id || '',
             new Date(s.started_at).toLocaleString('pl-PL'),
             s.last_activity ? new Date(s.last_activity).toLocaleString('pl-PL') : '',
             s.event_count.toString(),
@@ -711,6 +723,19 @@ export default function SessionsPage() {
                             ))}
                         </select>
                     </div>
+                    <div>
+                        <label className="text-xs text-slate-500 uppercase tracking-wider mb-1 block">🌐 Strona</label>
+                        <select
+                            value={siteFilter}
+                            onChange={e => { setSiteFilter(e.target.value); setPage(0); }}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none"
+                        >
+                            <option value="">Wszystkie strony</option>
+                            {uniqueSites.map(s => (
+                                <option key={s} value={s}>{s}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             </div>
 
@@ -770,6 +795,9 @@ export default function SessionsPage() {
                                     <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('visitor_id')}>
                                         Użytkownik {sortField === 'visitor_id' && (sortOrder === 'asc' ? '▲' : '▼')}
                                     </th>
+                                    <th className="p-4">
+                                        Strona
+                                    </th>
                                     <th className="p-4 cursor-pointer hover:text-white" onClick={() => handleSort('started_at')}>
                                         Start {sortField === 'started_at' && (sortOrder === 'asc' ? '▲' : '▼')}
                                     </th>
@@ -797,6 +825,11 @@ export default function SessionsPage() {
                                         <td className="p-4">
                                             <div className="font-mono text-xs text-blue-400">{session.visitor_id.substring(0, 12)}...</div>
                                             <div className="text-[10px] text-slate-600">{session.session_id.substring(0, 8)}</div>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="text-xs text-amber-400 font-medium truncate max-w-[150px]" title={session.site_id}>
+                                                🌐 {session.site_id || 'N/A'}
+                                            </div>
                                         </td>
                                         <td className="p-4 text-sm text-slate-300">{formatDate(session.started_at)}</td>
                                         <td className="p-4 text-sm text-slate-400">{formatDuration(session.started_at, session.last_activity)}</td>
@@ -849,6 +882,9 @@ export default function SessionsPage() {
                                     <div className="text-2xl font-bold text-white">{session.event_count}</div>
                                     <div className="text-[10px] text-slate-500">eventów</div>
                                 </div>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
+                                <span className="text-amber-400 font-medium truncate max-w-[120px]" title={session.site_id}>🌐 {session.site_id || 'N/A'}</span>
                             </div>
                             <div className="flex items-center justify-between text-xs text-slate-400">
                                 <span>{session.device_info?.browserName} / {session.device_info?.platform}</span>
