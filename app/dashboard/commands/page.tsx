@@ -284,9 +284,8 @@ export default function CommandsPage() {
             if (historyRes.ok) {
                 const historyData = await historyRes.json();
                 setHistory(historyData.commands || []);
-                
-                // Dodaj też site_id z historii komend
-                historyData.sites?.forEach((s: string) => sitesFromSessions.add(s));
+                // UWAGA: Nie dodajemy site_id z historii - lista stron 
+                // powinna zawierać tylko te z aktywnych sesji
             }
             
             setSites(Array.from(sitesFromSessions).sort());
