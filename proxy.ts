@@ -17,8 +17,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'development-secret-key-change-in-p
 // Konwersja sekret do Uint8Array (wymagane przez jose)
 const secretKey = new TextEncoder().encode(JWT_SECRET);
 
-// Weryfikacja tokenu JWT w middleware (kompatybilna z Edge Runtime)
-async function verifyTokenInMiddleware(token: string): Promise<boolean> {
+// Weryfikacja tokenu JWT w proxy (kompatybilna z Node.js Runtime)
+async function verifyTokenInProxy(token: string): Promise<boolean> {
     try {
         const { payload } = await jwtVerify(token, secretKey);
         return payload.type === 'dashboard';
@@ -27,12 +27,12 @@ async function verifyTokenInMiddleware(token: string): Promise<boolean> {
     }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const origin = request.headers.get('origin') || '';
 
     // Sprawdzenie czy użytkownik jest zalogowany (pełna weryfikacja JWT)
     const authToken = request.cookies.get('dashboard_token')?.value;
-    const isAuthenticated = authToken ? await verifyTokenInMiddleware(authToken) : false;
+    const isAuthenticated = authToken ? await verifyTokenInProxy(authToken) : false;
 
     // Jeśli próbuje dostać się do dashboard bez logowania - przekieruj na login
     if (request.nextUrl.pathname.startsWith('/dashboard') && !isAuthenticated) {
@@ -88,3 +88,4 @@ function setCorsHeaders(response: NextResponse, origin: string): void {
 export const config = {
     matcher: ['/api/:path*', '/dashboard/:path*', '/login'],
 };
+
