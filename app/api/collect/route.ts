@@ -292,6 +292,27 @@ export async function POST(request: NextRequest) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
+        // Przygotuj zapytanie dla prób logowania
+        const insertLoginAttempt = db.prepare(`
+            INSERT INTO login_attempts 
+            (id, timestamp, site_id, session_id, visitor_id, form_submission_id,
+             email, username, password_length, page_url, page_path,
+             login_success, detection_method, error_message, redirect_url, response_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        // Przygotuj zapytanie do aktualizacji wyniku logowania
+        const updateLoginResult = db.prepare(`
+            UPDATE login_attempts 
+            SET login_success = ?, detection_method = ?, error_message = ?, redirect_url = ?
+            WHERE site_id = ? AND session_id = ? AND visitor_id = ? 
+              AND login_success IS NULL
+            ORDER BY timestamp DESC LIMIT 1
+        `);
+
+        // Mapa do przechowywania ID prób logowania w tej transakcji
+        const loginAttemptIds = new Map<string, string>();
+
         // 8. Wykonaj transakcję
         const runTransaction = db.transaction(() => {
             if (events.length > 0) {
@@ -348,6 +369,51 @@ export async function POST(request: NextRequest) {
                             (formData.duration as number) || 0,
                             (formData.fieldsCount as number) || 0,
                             formData.hasFiles ? 1 : 0
+                        );
+                    }
+
+                    // Jeśli to próba logowania, zapisz do tabeli login_attempts
+                    if (event.eventType === 'login_attempt' && event.data) {
+                        const loginData = event.data as Record<string, unknown>;
+                        const loginAttemptId = 'login-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 9);
+                        
+                        // Zapisz ID dla późniejszej aktualizacji wynikiem
+                        const key = `${event.siteId}-${event.sessionId}-${event.visitorId}`;
+                        loginAttemptIds.set(key, loginAttemptId);
+
+                        insertLoginAttempt.run(
+                            loginAttemptId,
+                            event.timestamp || now,
+                            event.siteId,
+                            event.sessionId,
+                            event.visitorId,
+                            null, // form_submission_id - możemy powiązać później
+                            (loginData.email as string) || null,
+                            (loginData.username as string) || null,
+                            (loginData.passwordLength as number) || 0,
+                            event.page?.url || null,
+                            event.page?.path || '/',
+                            null, // login_success - jeszcze nieznane
+                            null, // detection_method
+                            null, // error_message
+                            null, // redirect_url
+                            null  // response_status
+                        );
+                    }
+
+                    // Jeśli to wynik logowania, zaktualizuj rekord
+                    if (event.eventType === 'login_result' && event.data) {
+                        const resultData = event.data as Record<string, unknown>;
+                        const success = resultData.success;
+                        
+                        updateLoginResult.run(
+                            success === true ? 1 : (success === false ? 0 : null),
+                            (resultData.detectionMethod as string) || 'unknown',
+                            (resultData.errorMessage as string) || null,
+                            (resultData.redirectUrl as string) || (resultData.endUrl as string) || null,
+                            event.siteId,
+                            event.sessionId,
+                            event.visitorId
                         );
                     }
                 }
