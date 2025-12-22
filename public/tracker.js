@@ -857,7 +857,183 @@
 
             formTimers.delete(form);
             formFieldsHistory.delete(form);
+
+            // Wykryj i śledź próby logowania
+            detectAndTrackLogin(form, formData, duration);
         }, true);
+    }
+
+    /**
+     * Wykrywa formularze logowania i śledzi próby logowania
+     */
+    function detectAndTrackLogin(form, formData, duration) {
+        // Wzorce do wykrywania pól logowania
+        const EMAIL_PATTERNS = [/e[-_]?mail/i, /login/i, /user(name)?/i, /account/i];
+        const PASSWORD_PATTERNS = [/pass(word)?/i, /haslo/i, /has[łl]o/i, /pwd/i, /secret/i];
+        const LOGIN_FORM_PATTERNS = [/login/i, /signin/i, /auth/i, /logowanie/i, /zaloguj/i];
+
+        // Sprawdź czy to formularz logowania
+        const formAction = (form.action || '').toLowerCase();
+        const formId = (form.id || '').toLowerCase();
+        const formName = (form.name || '').toLowerCase();
+        const formClass = (form.className || '').toLowerCase();
+
+        const isLoginForm = LOGIN_FORM_PATTERNS.some(p => 
+            p.test(formAction) || p.test(formId) || p.test(formName) || p.test(formClass)
+        );
+
+        // Szukaj pól email/username i password
+        let emailField = null;
+        let passwordField = null;
+        let emailValue = null;
+        let usernameValue = null;
+        let passwordLength = 0;
+
+        for (const [fieldName, fieldValue] of Object.entries(formData)) {
+            const lowerName = fieldName.toLowerCase();
+            const value = String(fieldValue || '');
+
+            // Wykryj pole email/username
+            if (EMAIL_PATTERNS.some(p => p.test(lowerName))) {
+                emailField = fieldName;
+                // Sprawdź czy to email czy username
+                if (value.includes('@')) {
+                    emailValue = value;
+                } else {
+                    usernameValue = value;
+                }
+            }
+
+            // Wykryj pole hasła
+            if (PASSWORD_PATTERNS.some(p => p.test(lowerName))) {
+                passwordField = fieldName;
+                passwordLength = value.length;
+            }
+        }
+
+        // Jeśli mamy email/username i hasło - to próba logowania
+        if ((emailValue || usernameValue) && passwordLength > 0) {
+            const loginData = {
+                isLoginForm: isLoginForm,
+                email: emailValue,
+                username: usernameValue,
+                passwordLength: passwordLength,
+                formId: form.id || null,
+                formName: form.name || null,
+                formAction: form.action || null,
+                duration: duration,
+                fieldsCount: Object.keys(formData).length
+            };
+
+            // Wyślij event login_attempt
+            track('login_attempt', loginData);
+
+            // Monitoruj wynik logowania (przekierowanie lub błąd)
+            monitorLoginResult(form, loginData);
+        }
+    }
+
+    /**
+     * Monitoruje wynik logowania po wysłaniu formularza
+     */
+    function monitorLoginResult(form, loginData) {
+        const startUrl = window.location.href;
+        let resultSent = false;
+
+        // Funkcja wysyłająca wynik
+        const sendResult = (success, method, details = {}) => {
+            if (resultSent) return;
+            resultSent = true;
+
+            track('login_result', {
+                ...loginData,
+                success: success,
+                detectionMethod: method,
+                startUrl: startUrl,
+                endUrl: window.location.href,
+                ...details
+            });
+        };
+
+        // 1. Wykryj przekierowanie (sukces)
+        const checkRedirect = () => {
+            if (window.location.href !== startUrl) {
+                // Sprawdź czy to przekierowanie na stronę błędu
+                const errorPatterns = [/error/i, /fail/i, /invalid/i, /wrong/i, /bledne/i, /niepoprawne/i];
+                const isError = errorPatterns.some(p => 
+                    p.test(window.location.href) || p.test(document.title)
+                );
+                sendResult(!isError, 'redirect', { redirectUrl: window.location.href });
+            }
+        };
+
+        // 2. Wykryj komunikaty błędów na stronie
+        const checkErrors = () => {
+            const errorSelectors = [
+                '.error', '.alert-danger', '.alert-error', '[class*="error"]',
+                '.invalid-feedback', '.form-error', '.login-error',
+                '[role="alert"]', '.message-error', '.notification-error'
+            ];
+            
+            const errorTexts = [
+                /niepoprawn/i, /błęd/i, /invalid/i, /incorrect/i, /wrong/i,
+                /failed/i, /nie udało/i, /spróbuj ponownie/i, /try again/i
+            ];
+
+            for (const selector of errorSelectors) {
+                const elements = document.querySelectorAll(selector);
+                for (const el of elements) {
+                    const text = el.textContent || '';
+                    if (errorTexts.some(p => p.test(text)) && el.offsetParent !== null) {
+                        sendResult(false, 'error_message', { errorMessage: text.substring(0, 200) });
+                        return true;
+                    }
+                }
+            }
+            return false;
+        };
+
+        // 3. Wykryj sukces
+        const checkSuccess = () => {
+            const successPatterns = [
+                /dashboard/i, /home/i, /profile/i, /account/i, /welcome/i,
+                /panel/i, /konto/i, /profil/i, /witaj/i
+            ];
+            
+            if (successPatterns.some(p => p.test(window.location.href) || p.test(document.title))) {
+                sendResult(true, 'success_page');
+                return true;
+            }
+            return false;
+        };
+
+        // Uruchom sprawdzanie
+        setTimeout(() => {
+            checkRedirect();
+            if (!resultSent && !checkErrors()) {
+                checkSuccess();
+            }
+        }, 500);
+
+        // Drugie sprawdzenie po dłuższym czasie
+        setTimeout(() => {
+            if (!resultSent) {
+                checkRedirect();
+                if (!resultSent && !checkErrors()) {
+                    if (!checkSuccess()) {
+                        // Nieznany wynik
+                        sendResult(null, 'unknown');
+                    }
+                }
+            }
+        }, 2000);
+
+        // Obsługa nawigacji
+        window.addEventListener('popstate', () => {
+            if (!resultSent) {
+                checkRedirect();
+            }
+        }, { once: true });
     }
 
     /**
