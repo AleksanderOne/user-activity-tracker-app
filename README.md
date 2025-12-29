@@ -28,23 +28,23 @@ Zbiera szczegółowe dane o zachowaniu użytkowników na stronach internetowych 
 
 ### Co jest śledzone automatycznie
 
-| Kategoria | Zdarzenia |
-|-----------|-----------|
-| 📊 **Nawigacja** | Pageviews, odsłony stron, referrer, parametry UTM |
-| 🖱️ **Kliknięcia** | Wszystkie kliknięcia w linki, przyciski, elementy z `data-track` |
-| 😤 **Rage Clicks** | Wykrywanie frustracji (3+ kliknięć w <1s w promieniu 20px) |
-| 📜 **Scroll** | Głębokość przewijania (progi: 25%, 50%, 75%, 100%) |
-| 📝 **Formularze** | Start wypełniania, focus na polach, submit + czas wypełniania |
-| ⌨️ **Wpisywanie** | Sekwencje wpisywane w inputy (bez pól password!) |
-| 📋 **Schowek** | Copy, cut, paste + fragment treści |
-| ⏱️ **Czas na stronie** | Heartbeat co 30s, całkowity czas wizyty |
-| 🎯 **Ruch myszy** | Ścieżki ruchu do heatmapy |
-| 📋 **Zaznaczanie tekstu** | Kopiowany/zaznaczony tekst |
-| ⚠️ **Błędy JS** | Runtime errors + unhandled promise rejections |
-| 🚀 **Performance** | Core Web Vitals, TTFB, DOM ready, FCP |
-| 👁️ **Widoczność** | Elementy z `data-track-view` widoczne w viewport |
-| 🔄 **Dynamiczne UI** | Modale, toasty, sheety, dropdowny (shadcn/radix) |
-| ☑️ **Formularze zaawansowane** | Checkboxy, switche, slidery, taby, accordiony |
+| Kategoria                      | Zdarzenia                                                        |
+| ------------------------------ | ---------------------------------------------------------------- |
+| 📊 **Nawigacja**               | Pageviews, odsłony stron, referrer, parametry UTM                |
+| 🖱️ **Kliknięcia**              | Wszystkie kliknięcia w linki, przyciski, elementy z `data-track` |
+| 😤 **Rage Clicks**             | Wykrywanie frustracji (3+ kliknięć w <1s w promieniu 20px)       |
+| 📜 **Scroll**                  | Głębokość przewijania (progi: 25%, 50%, 75%, 100%)               |
+| 📝 **Formularze**              | Start wypełniania, focus na polach, submit + czas wypełniania    |
+| ⌨️ **Wpisywanie**              | Sekwencje wpisywane w inputy (bez pól password!)                 |
+| 📋 **Schowek**                 | Copy, cut, paste + fragment treści                               |
+| ⏱️ **Czas na stronie**         | Heartbeat co 30s, całkowity czas wizyty                          |
+| 🎯 **Ruch myszy**              | Ścieżki ruchu do heatmapy                                        |
+| 📋 **Zaznaczanie tekstu**      | Kopiowany/zaznaczony tekst                                       |
+| ⚠️ **Błędy JS**                | Runtime errors + unhandled promise rejections                    |
+| 🚀 **Performance**             | Core Web Vitals, TTFB, DOM ready, FCP                            |
+| 👁️ **Widoczność**              | Elementy z `data-track-view` widoczne w viewport                 |
+| 🔄 **Dynamiczne UI**           | Modale, toasty, sheety, dropdowny (shadcn/radix)                 |
+| ☑️ **Formularze zaawansowane** | Checkboxy, switche, slidery, taby, accordiony                    |
 
 ### Zbierane informacje o urządzeniu
 
@@ -182,13 +182,13 @@ npm start
 
 ### Dostępne adresy
 
-| URL | Opis |
-|-----|------|
-| `http://localhost:3000` | Strona główna (redirect do dashboard) |
-| `http://localhost:3000/login` | Strona logowania |
-| `http://localhost:3000/dashboard` | Panel administracyjny |
-| `http://localhost:3000/demo.html` | Strona demo do testowania trackera |
-| `http://localhost:3000/demo` | Interaktywna strona demo (React) |
+| URL                               | Opis                                  |
+| --------------------------------- | ------------------------------------- |
+| `http://localhost:3000`           | Strona główna (redirect do dashboard) |
+| `http://localhost:3000/login`     | Strona logowania                      |
+| `http://localhost:3000/dashboard` | Panel administracyjny                 |
+| `http://localhost:3000/demo.html` | Strona demo do testowania trackera    |
+| `http://localhost:3000/demo`      | Interaktywna strona demo (React)      |
 
 ---
 
@@ -233,13 +233,13 @@ TRACKER_DB=/sciezka/do/tracker.db
 
 ### Tryb development vs production
 
-| Ustawienie | Development | Production |
-|------------|-------------|------------|
-| CORS | Akceptuje wszystkie domeny | Wymaga `ALLOWED_ORIGINS` |
-| API Token | Opcjonalny | Zalecany (ostrzeżenie bez) |
-| Hasło dashboard | Domyślnie `admin123` | Wymaga konfiguracji |
-| JWT Secret | Auto-generowany | Wymaga `JWT_SECRET` |
-| Debug logs | Włączone | Wyłączone |
+| Ustawienie      | Development                | Production                 |
+| --------------- | -------------------------- | -------------------------- |
+| CORS            | Akceptuje wszystkie domeny | Wymaga `ALLOWED_ORIGINS`   |
+| API Token       | Opcjonalny                 | Zalecany (ostrzeżenie bez) |
+| Hasło dashboard | Domyślnie `admin123`       | Wymaga konfiguracji        |
+| JWT Secret      | Auto-generowany            | Wymaga `JWT_SECRET`        |
+| Debug logs      | Włączone                   | Wyłączone                  |
 
 ---
 
@@ -250,13 +250,13 @@ TRACKER_DB=/sciezka/do/tracker.db
 Dodaj przed `</body>` lub w `<head>`:
 
 ```html
-<script 
-    src="https://twoj-tracker.pl/tracker.js"
-    data-endpoint="https://twoj-tracker.pl/api"
-    data-site-id="nazwa-twojej-strony"
-    data-api-token="nazwa-twojej-strony:tajny_token"
-    data-debug="false"
-    async
+<script
+  src="https://twoj-tracker.pl/tracker.js"
+  data-endpoint="https://twoj-tracker.pl/api"
+  data-site-id="nazwa-twojej-strony"
+  data-api-token="nazwa-twojej-strony:tajny_token"
+  data-debug="false"
+  async
 ></script>
 ```
 
@@ -265,42 +265,42 @@ Dodaj przed `</body>` lub w `<head>`:
 ```html
 <script src="https://twoj-tracker.pl/tracker.js" async></script>
 <script>
-    // Poczekaj na załadowanie trackera
-    window.addEventListener('load', function() {
-        Tracker.config({
-            endpoint: 'https://twoj-tracker.pl/api',
-            siteId: 'moja-strona',
-            debug: true  // Włącz logi w konsoli
-        });
+  // Poczekaj na załadowanie trackera
+  window.addEventListener('load', function () {
+    Tracker.config({
+      endpoint: 'https://twoj-tracker.pl/api',
+      siteId: 'moja-strona',
+      debug: true, // Włącz logi w konsoli
     });
+  });
 </script>
 ```
 
 ### Atrybuty konfiguracji
 
-| Atrybut | Opis | Wymagany | Domyślnie |
-|---------|------|----------|-----------|
-| `data-endpoint` | URL API trackera | NIE | `/api` (ta sama domena) |
-| `data-site-id` | Identyfikator strony | NIE | Hostname strony |
-| `data-api-token` | Token autoryzacji | NIE | Brak |
-| `data-debug` | Logi w konsoli | NIE | `false` |
+| Atrybut          | Opis                 | Wymagany | Domyślnie               |
+| ---------------- | -------------------- | -------- | ----------------------- |
+| `data-endpoint`  | URL API trackera     | NIE      | `/api` (ta sama domena) |
+| `data-site-id`   | Identyfikator strony | NIE      | Hostname strony         |
+| `data-api-token` | Token autoryzacji    | NIE      | Brak                    |
+| `data-debug`     | Logi w konsoli       | NIE      | `false`                 |
 
 ### Śledzenie custom eventów
 
 ```javascript
 // Prosty event
-Tracker.track('video_play', { 
-    videoId: 'abc123',
-    title: 'Wprowadzenie'
+Tracker.track('video_play', {
+  videoId: 'abc123',
+  title: 'Wprowadzenie',
 });
 
 // Event z kategoriami
 Tracker.track('purchase', {
-    category: 'ecommerce',
-    action: 'buy',
-    value: 99.99,
-    currency: 'PLN',
-    productId: 'SKU-001'
+  category: 'ecommerce',
+  action: 'buy',
+  value: 99.99,
+  currency: 'PLN',
+  productId: 'SKU-001',
 });
 
 // Wymuszenie wysłania (np. przed redirectem)
@@ -312,11 +312,11 @@ Tracker.flush();
 ```html
 <!-- Element zostanie zarejestrowany gdy będzie widoczny w 50% viewportu -->
 <section data-track-view="hero-section">
-    <h1>Witaj na stronie!</h1>
+  <h1>Witaj na stronie!</h1>
 </section>
 
 <div data-track-view="pricing-table">
-    <!-- Tabela cenowa -->
+  <!-- Tabela cenowa -->
 </div>
 ```
 
@@ -333,24 +333,24 @@ Tracker.flush();
 
 ### Endpointy publiczne
 
-| Metoda | Endpoint | Opis | Autoryzacja |
-|--------|----------|------|-------------|
-| POST | `/api/collect` | Zbieranie eventów | `X-API-Token` (opcjonalny) |
-| POST | `/api/auth/login` | Logowanie do dashboard | Brak |
-| POST | `/api/auth/logout` | Wylogowanie | Brak |
+| Metoda | Endpoint           | Opis                   | Autoryzacja                |
+| ------ | ------------------ | ---------------------- | -------------------------- |
+| POST   | `/api/collect`     | Zbieranie eventów      | `X-API-Token` (opcjonalny) |
+| POST   | `/api/auth/login`  | Logowanie do dashboard | Brak                       |
+| POST   | `/api/auth/logout` | Wylogowanie            | Brak                       |
 
 ### Endpointy chronione (wymagają JWT cookie)
 
-| Metoda | Endpoint | Opis |
-|--------|----------|------|
-| GET | `/api/stats/overview` | Statystyki ogólne |
-| GET | `/api/stats/realtime` | Aktywność na żywo (ostatnie 5 min) |
-| GET | `/api/stats/events` | Breakdown typów eventów |
-| GET | `/api/stats/timeline` | Aktywność w czasie |
-| GET | `/api/sessions` | Lista sesji |
-| GET | `/api/sessions/[id]` | Szczegóły sesji |
-| GET | `/api/sessions/[id]/events` | Eventy sesji |
-| GET | `/api/clicks/heatmap` | Dane do heatmapy |
+| Metoda | Endpoint                    | Opis                               |
+| ------ | --------------------------- | ---------------------------------- |
+| GET    | `/api/stats/overview`       | Statystyki ogólne                  |
+| GET    | `/api/stats/realtime`       | Aktywność na żywo (ostatnie 5 min) |
+| GET    | `/api/stats/events`         | Breakdown typów eventów            |
+| GET    | `/api/stats/timeline`       | Aktywność w czasie                 |
+| GET    | `/api/sessions`             | Lista sesji                        |
+| GET    | `/api/sessions/[id]`        | Szczegóły sesji                    |
+| GET    | `/api/sessions/[id]/events` | Eventy sesji                       |
+| GET    | `/api/clicks/heatmap`       | Dane do heatmapy                   |
 
 ### Parametry zapytań
 
@@ -400,20 +400,20 @@ curl -X POST http://localhost:3000/api/collect \
 
 ```typescript
 interface CollectPayload {
-    events: Event[];           // Max 100 eventów na request
-    device?: DeviceInfo;       // Informacje o urządzeniu
-    utm?: UtmParams;           // Parametry kampanii
+  events: Event[]; // Max 100 eventów na request
+  device?: DeviceInfo; // Informacje o urządzeniu
+  utm?: UtmParams; // Parametry kampanii
 }
 
 interface Event {
-    id: string;                // UUID v4
-    timestamp: string;         // ISO 8601
-    siteId: string;            // Identyfikator strony
-    sessionId: string;         // UUID sesji
-    visitorId: string;         // UUID użytkownika
-    eventType: string;         // Typ eventu
-    page?: PageInfo;           // Info o stronie
-    data?: Record<string, any>; // Dodatkowe dane
+  id: string; // UUID v4
+  timestamp: string; // ISO 8601
+  siteId: string; // Identyfikator strony
+  sessionId: string; // UUID sesji
+  visitorId: string; // UUID użytkownika
+  eventType: string; // Typ eventu
+  page?: PageInfo; // Info o stronie
+  data?: Record<string, any>; // Dodatkowe dane
 }
 ```
 
@@ -448,16 +448,16 @@ interface Event {
 
 ### Wbudowane zabezpieczenia
 
-| Funkcja | Opis |
-|---------|------|
-| **JWT Authentication** | Token podpisany cyfrowo (HS256) |
-| **Rate Limiting** | 100 req/min na `/collect`, 5 prób logowania/15min |
-| **Walidacja Zod** | Schemat dla wszystkich danych wejściowych |
-| **CORS** | Konfigurowalny dla dozwolonych domen |
-| **Token API** | Opcjonalna autoryzacja dla stron trackingowych |
-| **IP Hashing** | SHA256, pierwsze 16 znaków |
-| **GeoIP Cache** | Ochrona przed rate limit zewnętrznego API |
-| **Filtrowanie pól wrażliwych** | Pola z "password", "card", "cvv" = `[CHRONIONE]` |
+| Funkcja                        | Opis                                              |
+| ------------------------------ | ------------------------------------------------- |
+| **JWT Authentication**         | Token podpisany cyfrowo (HS256)                   |
+| **Rate Limiting**              | 100 req/min na `/collect`, 5 prób logowania/15min |
+| **Walidacja Zod**              | Schemat dla wszystkich danych wejściowych         |
+| **CORS**                       | Konfigurowalny dla dozwolonych domen              |
+| **Token API**                  | Opcjonalna autoryzacja dla stron trackingowych    |
+| **IP Hashing**                 | SHA256, pierwsze 16 znaków                        |
+| **GeoIP Cache**                | Ochrona przed rate limit zewnętrznego API         |
+| **Filtrowanie pól wrażliwych** | Pola z "password", "card", "cvv" = `[CHRONIONE]`  |
 
 ### Checklist przed produkcją
 
@@ -548,15 +548,15 @@ sqlite3 tracker.db
 .schema events
 
 # Ostatnie eventy
-SELECT event_type, timestamp, path 
-FROM events 
-ORDER BY timestamp DESC 
+SELECT event_type, timestamp, path
+FROM events
+ORDER BY timestamp DESC
 LIMIT 10;
 
 # Statystyki
-SELECT event_type, COUNT(*) as count 
-FROM events 
-GROUP BY event_type 
+SELECT event_type, COUNT(*) as count
+FROM events
+GROUP BY event_type
 ORDER BY count DESC;
 ```
 
@@ -572,6 +572,7 @@ vercel deploy
 ```
 
 > ⚠️ **Uwaga**: SQLite może nie działać na Vercel (serverless). Alternatywy:
+>
 > - **Turso** (SQLite edge)
 > - **Vercel Postgres**
 > - **PlanetScale** (MySQL)
@@ -627,7 +628,7 @@ services:
   tracker:
     build: .
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - tracker-data:/app/data
     environment:
@@ -749,24 +750,25 @@ user-activity-tracker-app/
 
 ## 📚 Stack technologiczny
 
-| Technologia | Wersja | Opis |
-|-------------|--------|------|
-| Next.js | 16.x | Framework React (App Router) |
-| React | 19.x | UI Library |
-| TypeScript | 5.x | Typy statyczne |
-| SQLite | - | Baza danych (via better-sqlite3) |
-| Tailwind CSS | 4.x | Styling |
-| Recharts | 3.x | Wykresy |
-| Zod | 4.x | Walidacja schematów |
-| bcryptjs | 3.x | Hashowanie haseł |
-| jsonwebtoken | 9.x | Tokeny JWT |
-| shadcn/ui | - | Komponenty UI |
+| Technologia  | Wersja | Opis                             |
+| ------------ | ------ | -------------------------------- |
+| Next.js      | 16.x   | Framework React (App Router)     |
+| React        | 19.x   | UI Library                       |
+| TypeScript   | 5.x    | Typy statyczne                   |
+| SQLite       | -      | Baza danych (via better-sqlite3) |
+| Tailwind CSS | 4.x    | Styling                          |
+| Recharts     | 3.x    | Wykresy                          |
+| Zod          | 4.x    | Walidacja schematów              |
+| bcryptjs     | 3.x    | Hashowanie haseł                 |
+| jsonwebtoken | 9.x    | Tokeny JWT                       |
+| shadcn/ui    | -      | Komponenty UI                    |
 
 ---
 
 ## 📝 Changelog
 
 ### v2.1.0
+
 - ✅ JWT authentication (zamiast statycznego cookie)
 - ✅ Rate limiting na wszystkich endpointach
 - ✅ Walidacja danych wejściowych (Zod)
@@ -791,6 +793,7 @@ MIT - Rób co chcesz, ale nie ma gwarancji.
 ## 🤝 Wsparcie
 
 Masz pytania? Znalazłeś bug?
+
 1. Sprawdź sekcję [Troubleshooting](#-troubleshooting)
 2. Otwórz Issue na GitHub
 3. Opisz problem z logami i krokami reprodukcji

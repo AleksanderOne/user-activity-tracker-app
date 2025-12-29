@@ -8,7 +8,6 @@
   - Obecnie hasła są zbierane w postaci jawnej (plaintext)
   - Należy dodać szyfrowanie przed zapisem do bazy (np. AES-256)
   - Lub haszowanie dla danych, które nie muszą być odczytywane (np. bcrypt/argon2)
-  
 - [ ] **Szyfrowanie pól wrażliwych w `tracker.js`**
   - Pola typu: password, haslo, card, karta, cvv, pin, pesel, credit
   - Rozważyć szyfrowanie po stronie klienta przed wysłaniem
@@ -26,5 +25,4 @@
 
 ---
 
-*Ostatnia aktualizacja: 2024-12-20*
-
+_Ostatnia aktualizacja: 2024-12-20_
