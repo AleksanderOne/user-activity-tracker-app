@@ -1,200 +1,205 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Strony Testowe - User Activity Tracker</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px;
-        }
-        
-        .container {
-            max-width: 900px;
-            width: 100%;
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 50px;
-        }
-        
-        .header h1 {
-            color: white;
-            font-size: 2.5em;
-            margin-bottom: 15px;
-        }
-        
-        .header p {
-            color: rgba(255,255,255,0.7);
-            font-size: 1.1em;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.6;
-        }
-        
-        .sites-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .site-card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 35px;
-            text-decoration: none;
-            transition: all 0.3s;
-            display: block;
-        }
-        
-        .site-card:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-        
-        .site-icon {
-            font-size: 3.5em;
-            margin-bottom: 20px;
-        }
-        
-        .site-card h2 {
-            color: white;
-            font-size: 1.4em;
-            margin-bottom: 10px;
-        }
-        
-        .site-card p {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.95em;
-            line-height: 1.5;
-        }
-        
-        .site-id {
-            display: inline-block;
-            margin-top: 15px;
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.8);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-family: monospace;
-            font-size: 0.85em;
-        }
-        
-        .dashboard-link {
-            text-align: center;
-        }
-        
-        .dashboard-link a {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            color: white;
-            text-decoration: none;
-            padding: 16px 32px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 1.1em;
-            transition: all 0.3s;
-        }
-        
-        .dashboard-link a:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
-        }
-        
-        .info-box {
-            margin-top: 50px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 15px;
-            padding: 25px;
-        }
-        
-        .info-box h3 {
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .info-box ul {
-            color: rgba(255,255,255,0.6);
-            margin-left: 25px;
-            line-height: 1.8;
-        }
-        
-        .info-box code {
-            background: rgba(255,255,255,0.1);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-family: monospace;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>🔍 Strony Testowe</h1>
-            <p>
-                Wybierz stronę testową do inwigilacji. Każda strona ma podpięty tracker 
-                wysyłający dane do serwera. Obserwuj aktywność w dashboardzie!
-            </p>
-        </div>
-        
-        <div class="sites-grid">
-            <a href="/test-sites/shop/" class="site-card">
-                <div class="site-icon">🛒</div>
-                <h2>TechShop</h2>
-                <p>Sklep z elektroniką - produkty, koszyk, newsletter. Idealne do testowania e-commerce.</p>
-                <span class="site-id">site-id: shop</span>
-            </a>
-            
-            <a href="/test-sites/demo/" class="site-card">
-                <div class="site-icon">🚀</div>
-                <h2>StartupLab</h2>
-                <p>Landing page startupu - funkcje, statystyki, formularz kontaktowy.</p>
-                <span class="site-id">site-id: demo</span>
-            </a>
-            
-            <a href="/test-sites/bank/" class="site-card">
-                <div class="site-icon">🏦</div>
-                <h2>SecureBank</h2>
-                <p>Panel bankowy - konta, przelewy, transakcje. Testuj wrażliwe formularze.</p>
-                <span class="site-id">site-id: bank</span>
-            </a>
-        </div>
-        
-        <div class="dashboard-link">
-            <a href="/dashboard">
-                📊 Otwórz Dashboard Inwigilatora
-            </a>
-        </div>
-        
-        <div class="info-box">
-            <h3>💡 Jak to działa?</h3>
-            <ul>
-                <li>Każda strona testowa ma wstrzyknięty <code>&lt;script src="/tracker.js"&gt;</code></li>
-                <li>Tracker wysyła dane do <code>http://localhost:3000/api</code></li>
-                <li>Dashboard jest ODDZIELNY od stron testowych (brak zapętlenia)</li>
-                <li>Każda strona ma unikalny <code>site-id</code> do filtrowania w dashboardzie</li>
-                <li>Dane są zbierane: kliknięcia, scroll, formularze, logi konsoli, requesty sieciowe</li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      .container {
+        max-width: 900px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 50px;
+      }
+
+      .header h1 {
+        color: white;
+        font-size: 2.5em;
+        margin-bottom: 15px;
+      }
+
+      .header p {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 1.1em;
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+      }
+
+      .sites-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+      }
+
+      .site-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        padding: 35px;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: block;
+      }
+
+      .site-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+
+      .site-icon {
+        font-size: 3.5em;
+        margin-bottom: 20px;
+      }
+
+      .site-card h2 {
+        color: white;
+        font-size: 1.4em;
+        margin-bottom: 10px;
+      }
+
+      .site-card p {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.95em;
+        line-height: 1.5;
+      }
+
+      .site-id {
+        display: inline-block;
+        margin-top: 15px;
+        background: rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.8);
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 0.85em;
+      }
+
+      .dashboard-link {
+        text-align: center;
+      }
+
+      .dashboard-link a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        text-decoration: none;
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1em;
+        transition: all 0.3s;
+      }
+
+      .dashboard-link a:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+      }
+
+      .info-box {
+        margin-top: 50px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 25px;
+      }
+
+      .info-box h3 {
+        color: rgba(255, 255, 255, 0.9);
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .info-box ul {
+        color: rgba(255, 255, 255, 0.6);
+        margin-left: 25px;
+        line-height: 1.8;
+      }
+
+      .info-box code {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔍 Strony Testowe</h1>
+        <p>
+          Wybierz stronę testową do inwigilacji. Każda strona ma podpięty tracker wysyłający dane do
+          serwera. Obserwuj aktywność w dashboardzie!
+        </p>
+      </div>
+
+      <div class="sites-grid">
+        <a href="/test-sites/shop/" class="site-card">
+          <div class="site-icon">🛒</div>
+          <h2>TechShop</h2>
+          <p>
+            Sklep z elektroniką - produkty, koszyk, newsletter. Idealne do testowania e-commerce.
+          </p>
+          <span class="site-id">site-id: shop</span>
+        </a>
+
+        <a href="/test-sites/demo/" class="site-card">
+          <div class="site-icon">🚀</div>
+          <h2>StartupLab</h2>
+          <p>Landing page startupu - funkcje, statystyki, formularz kontaktowy.</p>
+          <span class="site-id">site-id: demo</span>
+        </a>
+
+        <a href="/test-sites/bank/" class="site-card">
+          <div class="site-icon">🏦</div>
+          <h2>SecureBank</h2>
+          <p>Panel bankowy - konta, przelewy, transakcje. Testuj wrażliwe formularze.</p>
+          <span class="site-id">site-id: bank</span>
+        </a>
+      </div>
+
+      <div class="dashboard-link">
+        <a href="/dashboard"> 📊 Otwórz Dashboard Inwigilatora </a>
+      </div>
+
+      <div class="info-box">
+        <h3>💡 Jak to działa?</h3>
+        <ul>
+          <li>
+            Każda strona testowa ma wstrzyknięty <code>&lt;script src="/tracker.js"&gt;</code>
+          </li>
+          <li>Tracker wysyła dane do <code>http://localhost:3000/api</code></li>
+          <li>Dashboard jest ODDZIELNY od stron testowych (brak zapętlenia)</li>
+          <li>Każda strona ma unikalny <code>site-id</code> do filtrowania w dashboardzie</li>
+          <li>Dane są zbierane: kliknięcia, scroll, formularze, logi konsoli, requesty sieciowe</li>
+        </ul>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,1733 +1,2155 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SecureBank - Twoje finanse pod kontrolą</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            min-height: 100vh;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        .hidden { display: none !important; }
-        
-        /* Ekran logowania */
-        .login-screen {
-            min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+      body {
+        font-family:
+          'SF Pro Display',
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #f8fafc;
+        color: #1e293b;
+        min-height: 100vh;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Ekran logowania */
+      .login-screen {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .login-container {
+        background: white;
+        border-radius: 24px;
+        padding: 50px 40px;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+      }
+
+      .login-logo {
+        text-align: center;
+        margin-bottom: 40px;
+      }
+
+      .login-logo .logo-icon {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        width: 70px;
+        height: 70px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2em;
+        margin-bottom: 15px;
+      }
+
+      .login-logo h1 {
+        font-size: 1.8em;
+        color: #0f172a;
+      }
+
+      .login-logo p {
+        color: #64748b;
+        margin-top: 5px;
+      }
+
+      .login-form .form-group {
+        margin-bottom: 20px;
+      }
+
+      .login-form label {
+        display: block;
+        margin-bottom: 8px;
+        color: #374151;
+        font-weight: 500;
+      }
+
+      .login-form input {
+        width: 100%;
+        padding: 16px 18px;
+        border: 2px solid #e5e7eb;
+        border-radius: 12px;
+        font-size: 1em;
+        transition: all 0.3s;
+      }
+
+      .login-form input:focus {
+        outline: none;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
+      }
+
+      .login-btn {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1.1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+      }
+
+      .login-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(22, 163, 74, 0.3);
+      }
+
+      .login-error {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+        display: none;
+      }
+
+      .login-error.show {
+        display: block;
+      }
+
+      .demo-credentials {
+        margin-top: 30px;
+        padding: 20px;
+        background: #f0fdf4;
+        border-radius: 12px;
+        border: 1px solid #bbf7d0;
+      }
+
+      .demo-credentials h4 {
+        color: #15803d;
+        margin-bottom: 10px;
+        font-size: 0.9em;
+      }
+
+      .demo-credentials p {
+        color: #166534;
+        font-size: 0.85em;
+        margin: 5px 0;
+        font-family: monospace;
+      }
+
+      /* Nagłówek */
+      header {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        padding: 15px 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: white;
+        font-weight: 700;
+        font-size: 1.4em;
+      }
+
+      .logo-icon {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+      }
+
+      .user-info {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9em;
+      }
+
+      .logout-btn {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+      }
+
+      .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Main Layout */
+      .main-container {
+        display: flex;
+        min-height: calc(100vh - 70px);
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 280px;
+        background: white;
+        border-right: 1px solid #e2e8f0;
+        padding: 30px 0;
+      }
+
+      .sidebar-menu {
+        list-style: none;
+      }
+
+      .sidebar-menu li {
+        margin-bottom: 5px;
+      }
+
+      .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 30px;
+        color: #64748b;
+        text-decoration: none;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+        cursor: pointer;
+      }
+
+      .sidebar-menu a:hover,
+      .sidebar-menu a.active {
+        background: #f0fdf4;
+        color: #16a34a;
+        border-left-color: #16a34a;
+      }
+
+      .sidebar-menu .icon {
+        font-size: 1.3em;
+      }
+
+      /* Content */
+      .content {
+        flex: 1;
+        padding: 40px;
+        overflow-y: auto;
+      }
+
+      .page-title {
+        font-size: 1.8em;
+        font-weight: 700;
+        margin-bottom: 30px;
+        color: #0f172a;
+      }
+
+      /* Sekcje - ukrywanie/pokazywanie */
+      .section {
+        display: none;
+      }
+      .section.active {
+        display: block;
+      }
+
+      /* Wyszukiwarka */
+      .search-bar {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+
+      .search-input {
+        flex: 1;
+        padding: 14px 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 1em;
+        transition: all 0.3s;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #16a34a;
+      }
+
+      .search-btn {
+        padding: 14px 25px;
+        background: #16a34a;
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .search-btn:hover {
+        background: #15803d;
+      }
+
+      .filter-tags {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+
+      .filter-tag {
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        font-size: 0.85em;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .filter-tag:hover,
+      .filter-tag.active {
+        background: #16a34a;
+        color: white;
+        border-color: #16a34a;
+      }
+
+      /* Cards */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 40px;
+      }
+
+      .card {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+      }
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .card-title {
+        color: #64748b;
+        font-size: 0.9em;
+        font-weight: 500;
+      }
+
+      .card-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3em;
+      }
+
+      .card-icon.green {
+        background: #dcfce7;
+      }
+      .card-icon.blue {
+        background: #dbeafe;
+      }
+      .card-icon.purple {
+        background: #f3e8ff;
+      }
+      .card-icon.orange {
+        background: #ffedd5;
+      }
+      .card-icon.red {
+        background: #fee2e2;
+      }
+
+      .card-value {
+        font-size: 2em;
+        font-weight: 700;
+        color: #0f172a;
+      }
+
+      .card-change {
+        font-size: 0.85em;
+        margin-top: 10px;
+      }
+
+      .card-change.positive {
+        color: #16a34a;
+      }
+      .card-change.negative {
+        color: #dc2626;
+      }
+
+      /* Account Card */
+      .account-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .account-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+
+      .account-card h3 {
+        font-size: 0.9em;
+        opacity: 0.8;
+        margin-bottom: 10px;
+      }
+
+      .account-number {
+        font-family: 'Courier New', monospace;
+        font-size: 1.1em;
+        letter-spacing: 2px;
+        margin-bottom: 25px;
+      }
+
+      .account-balance {
+        font-size: 2.5em;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .account-actions {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+      }
+
+      .account-btn {
+        flex: 1;
+        min-width: 120px;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .account-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+      }
+
+      /* Transactions */
+      .transactions-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e2e8f0;
+      }
+
+      .transactions-header {
+        padding: 25px;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .transactions-header h3 {
+        font-size: 1.2em;
+        color: #0f172a;
+      }
+
+      .view-all-btn {
+        color: #16a34a;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9em;
+        cursor: pointer;
+      }
+
+      .transaction-list {
+        list-style: none;
+      }
+
+      .transaction-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 25px;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.2s;
+        cursor: pointer;
+      }
+
+      .transaction-item:hover {
+        background: #f8fafc;
+      }
+
+      .transaction-item:last-child {
+        border-bottom: none;
+      }
+
+      .transaction-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .transaction-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 12px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2em;
+      }
+
+      .transaction-details h4 {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 5px;
+      }
+
+      .transaction-details p {
+        color: #94a3b8;
+        font-size: 0.85em;
+      }
+
+      .transaction-amount {
+        font-weight: 600;
+        font-size: 1.1em;
+        text-align: right;
+      }
+
+      .transaction-amount.income {
+        color: #16a34a;
+      }
+      .transaction-amount.expense {
+        color: #0f172a;
+      }
+
+      .transaction-category {
+        font-size: 0.75em;
+        color: #94a3b8;
+        display: block;
+      }
+
+      /* Modal */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal-overlay.show {
+        display: flex;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 20px;
+        padding: 40px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal h2 {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #64748b;
+        font-weight: 500;
+        font-size: 0.9em;
+      }
+
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: border-color 0.3s;
+        font-family: inherit;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        outline: none;
+        border-color: #16a34a;
+      }
+
+      .form-group textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+      }
+
+      .modal-btn {
+        flex: 1;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .modal-btn.cancel {
+        background: #f1f5f9;
+        border: none;
+        color: #64748b;
+      }
+
+      .modal-btn.confirm {
+        background: #16a34a;
+        border: none;
+        color: white;
+      }
+
+      .modal-btn.danger {
+        background: #dc2626;
+        border: none;
+        color: white;
+      }
+
+      .modal-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      /* Szczegóły transakcji */
+      .transaction-detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .transaction-detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .transaction-detail-label {
+        color: #64748b;
+        font-size: 0.9em;
+      }
+
+      .transaction-detail-value {
+        font-weight: 600;
+        color: #0f172a;
+      }
+
+      /* Karty bankowe */
+      .bank-card {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+        color: white;
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 20px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .bank-card.gold {
+        background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
+      }
+
+      .bank-card::after {
+        content: '';
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        width: 60px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 5px;
+      }
+
+      .bank-card-type {
+        font-size: 0.8em;
+        opacity: 0.8;
+        margin-bottom: 20px;
+      }
+
+      .bank-card-number {
+        font-family: 'Courier New', monospace;
+        font-size: 1.2em;
+        letter-spacing: 3px;
+        margin-bottom: 20px;
+      }
+
+      .bank-card-footer {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .bank-card-holder,
+      .bank-card-expiry {
+        font-size: 0.85em;
+      }
+
+      .bank-card-label {
+        font-size: 0.7em;
+        opacity: 0.7;
+        display: block;
+        margin-bottom: 3px;
+      }
+
+      /* BLIK */
+      .blik-code {
+        font-size: 3em;
+        font-weight: 700;
+        text-align: center;
+        letter-spacing: 10px;
+        padding: 30px;
+        background: #f0fdf4;
+        border-radius: 16px;
+        margin: 20px 0;
+        font-family: 'Courier New', monospace;
+        color: #16a34a;
+      }
+
+      .blik-timer {
+        text-align: center;
+        color: #64748b;
+        font-size: 0.9em;
+      }
+
+      .blik-timer span {
+        color: #dc2626;
+        font-weight: 700;
+      }
+
+      /* Statystyki */
+      .stats-chart {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 30px;
+        margin-bottom: 25px;
+      }
+
+      .chart-bar {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .chart-label {
+        width: 120px;
+        font-size: 0.85em;
+        color: #64748b;
+      }
+
+      .chart-bar-container {
+        flex: 1;
+        height: 24px;
+        background: #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      .chart-bar-fill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 1s ease;
+      }
+
+      .chart-bar-fill.green {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+      }
+      .chart-bar-fill.blue {
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+      }
+      .chart-bar-fill.purple {
+        background: linear-gradient(90deg, #a855f7, #9333ea);
+      }
+      .chart-bar-fill.orange {
+        background: linear-gradient(90deg, #f97316, #ea580c);
+      }
+      .chart-bar-fill.red {
+        background: linear-gradient(90deg, #ef4444, #dc2626);
+      }
+
+      .chart-value {
+        width: 80px;
+        text-align: right;
+        font-weight: 600;
+        font-size: 0.9em;
+      }
+
+      /* Toast */
+      .toast {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: #0f172a;
+        color: white;
+        padding: 15px 25px;
+        border-radius: 12px;
+        font-weight: 500;
+        transform: translateY(100px);
+        opacity: 0;
+        transition: all 0.3s;
+        z-index: 1001;
+        max-width: 350px;
+      }
+
+      .toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .toast.success {
+        background: #16a34a;
+      }
+      .toast.error {
+        background: #dc2626;
+      }
+      .toast.warning {
+        background: #d97706;
+      }
+
+      /* Loader */
+      .loader {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-        
-        .login-container {
-            background: white;
-            border-radius: 24px;
-            padding: 50px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.4);
-        }
-        
-        .login-logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-        
-        .login-logo .logo-icon {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            width: 70px;
-            height: 70px;
-            border-radius: 18px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            margin-bottom: 15px;
-        }
-        
-        .login-logo h1 {
-            font-size: 1.8em;
-            color: #0f172a;
-        }
-        
-        .login-logo p {
-            color: #64748b;
-            margin-top: 5px;
-        }
-        
-        .login-form .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .login-form label {
-            display: block;
-            margin-bottom: 8px;
-            color: #374151;
-            font-weight: 500;
-        }
-        
-        .login-form input {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-        
-        .login-form input:focus {
-            outline: none;
-            border-color: #16a34a;
-            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.1);
-        }
-        
-        .login-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 10px;
-        }
-        
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(22, 163, 74, 0.3);
-        }
-        
-        .login-error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 12px 16px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 0.9em;
-            display: none;
-        }
-        
-        .login-error.show { display: block; }
-        
-        .demo-credentials {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f0fdf4;
-            border-radius: 12px;
-            border: 1px solid #bbf7d0;
-        }
-        
-        .demo-credentials h4 {
-            color: #15803d;
-            margin-bottom: 10px;
-            font-size: 0.9em;
-        }
-        
-        .demo-credentials p {
-            color: #166534;
-            font-size: 0.85em;
-            margin: 5px 0;
-            font-family: monospace;
-        }
-        
-        /* Nagłówek */
-        header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            padding: 15px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            font-weight: 700;
-            font-size: 1.4em;
-        }
-        
-        .logo-icon {
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-        
-        .user-info {
-            color: rgba(255,255,255,0.8);
-            font-size: 0.9em;
-        }
-        
-        .logout-btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-        
-        /* Main Layout */
-        .main-container {
-            display: flex;
-            min-height: calc(100vh - 70px);
-        }
-        
-        /* Sidebar */
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
         .sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid #e2e8f0;
-            padding: 30px 0;
+          display: none;
         }
-        
-        .sidebar-menu {
-            list-style: none;
-        }
-        
-        .sidebar-menu li {
-            margin-bottom: 5px;
-        }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px 30px;
-            color: #64748b;
-            text-decoration: none;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
-            cursor: pointer;
-        }
-        
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background: #f0fdf4;
-            color: #16a34a;
-            border-left-color: #16a34a;
-        }
-        
-        .sidebar-menu .icon {
-            font-size: 1.3em;
-        }
-        
-        /* Content */
         .content {
-            flex: 1;
-            padding: 40px;
-            overflow-y: auto;
+          padding: 20px;
         }
-        
-        .page-title {
-            font-size: 1.8em;
-            font-weight: 700;
-            margin-bottom: 30px;
-            color: #0f172a;
-        }
-        
-        /* Sekcje - ukrywanie/pokazywanie */
-        .section { display: none; }
-        .section.active { display: block; }
-        
-        /* Wyszukiwarka */
-        .search-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .search-input {
-            flex: 1;
-            padding: 14px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 1em;
-            transition: all 0.3s;
-        }
-        
-        .search-input:focus {
-            outline: none;
-            border-color: #16a34a;
-        }
-        
-        .search-btn {
-            padding: 14px 25px;
-            background: #16a34a;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .search-btn:hover {
-            background: #15803d;
-        }
-        
-        .filter-tags {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-tag {
-            padding: 8px 16px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            border-radius: 20px;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .filter-tag:hover, .filter-tag.active {
-            background: #16a34a;
-            color: white;
-            border-color: #16a34a;
-        }
-        
-        /* Cards */
-        .cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-        }
-        
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .card-title {
-            color: #64748b;
-            font-size: 0.9em;
-            font-weight: 500;
-        }
-        
-        .card-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3em;
-        }
-        
-        .card-icon.green { background: #dcfce7; }
-        .card-icon.blue { background: #dbeafe; }
-        .card-icon.purple { background: #f3e8ff; }
-        .card-icon.orange { background: #ffedd5; }
-        .card-icon.red { background: #fee2e2; }
-        
-        .card-value {
-            font-size: 2em;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        
-        .card-change {
-            font-size: 0.85em;
-            margin-top: 10px;
-        }
-        
-        .card-change.positive { color: #16a34a; }
-        .card-change.negative { color: #dc2626; }
-        
-        /* Account Card */
-        .account-card {
-            background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
-            color: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .account-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -20%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            border-radius: 50%;
-        }
-        
-        .account-card h3 {
-            font-size: 0.9em;
-            opacity: 0.8;
-            margin-bottom: 10px;
-        }
-        
-        .account-number {
-            font-family: 'Courier New', monospace;
-            font-size: 1.1em;
-            letter-spacing: 2px;
-            margin-bottom: 25px;
-        }
-        
-        .account-balance {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin-bottom: 20px;
-        }
-        
-        .account-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .account-btn {
-            flex: 1;
-            min-width: 120px;
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .account-btn:hover {
-            background: rgba(255,255,255,0.25);
-            transform: translateY(-2px);
-        }
-        
-        /* Transactions */
-        .transactions-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
-        }
-        
-        .transactions-header {
-            padding: 25px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .transactions-header h3 {
-            font-size: 1.2em;
-            color: #0f172a;
-        }
-        
-        .view-all-btn {
-            color: #16a34a;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9em;
-            cursor: pointer;
-        }
-        
-        .transaction-list {
-            list-style: none;
-        }
-        
-        .transaction-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 25px;
-            border-bottom: 1px solid #f1f5f9;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        
-        .transaction-item:hover {
-            background: #f8fafc;
-        }
-        
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-        
-        .transaction-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .transaction-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            background: #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-        }
-        
-        .transaction-details h4 {
-            font-weight: 600;
-            color: #0f172a;
-            margin-bottom: 5px;
-        }
-        
-        .transaction-details p {
-            color: #94a3b8;
-            font-size: 0.85em;
-        }
-        
-        .transaction-amount {
-            font-weight: 600;
-            font-size: 1.1em;
-            text-align: right;
-        }
-        
-        .transaction-amount.income { color: #16a34a; }
-        .transaction-amount.expense { color: #0f172a; }
-        
-        .transaction-category {
-            font-size: 0.75em;
-            color: #94a3b8;
-            display: block;
-        }
-        
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        
-        .modal-overlay.show {
-            display: flex;
-        }
-        
-        .modal {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        
-        .modal h2 {
-            font-size: 1.5em;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #64748b;
-            font-weight: 500;
-            font-size: 0.9em;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-            font-family: inherit;
-        }
-        
-        .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #16a34a;
-        }
-        
-        .form-group textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
-        
         .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
+          grid-template-columns: 1fr;
         }
-        
-        .modal-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-        }
-        
-        .modal-btn {
-            flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .modal-btn.cancel {
-            background: #f1f5f9;
-            border: none;
-            color: #64748b;
-        }
-        
-        .modal-btn.confirm {
-            background: #16a34a;
-            border: none;
-            color: white;
-        }
-        
-        .modal-btn.danger {
-            background: #dc2626;
-            border: none;
-            color: white;
-        }
-        
-        .modal-btn:hover {
-            transform: translateY(-2px);
-        }
-        
-        /* Szczegóły transakcji */
-        .transaction-detail-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-        
-        .transaction-detail-row:last-child {
-            border-bottom: none;
-        }
-        
-        .transaction-detail-label {
-            color: #64748b;
-            font-size: 0.9em;
-        }
-        
-        .transaction-detail-value {
-            font-weight: 600;
-            color: #0f172a;
-        }
-        
-        /* Karty bankowe */
-        .bank-card {
-            background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
-            color: white;
-            border-radius: 16px;
-            padding: 25px;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .bank-card.gold {
-            background: linear-gradient(135deg, #b45309 0%, #d97706 100%);
-        }
-        
-        .bank-card::after {
-            content: '';
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            width: 60px;
-            height: 40px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 5px;
-        }
-        
-        .bank-card-type {
-            font-size: 0.8em;
-            opacity: 0.8;
-            margin-bottom: 20px;
-        }
-        
-        .bank-card-number {
-            font-family: 'Courier New', monospace;
-            font-size: 1.2em;
-            letter-spacing: 3px;
-            margin-bottom: 20px;
-        }
-        
-        .bank-card-footer {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .bank-card-holder, .bank-card-expiry {
-            font-size: 0.85em;
-        }
-        
-        .bank-card-label {
-            font-size: 0.7em;
-            opacity: 0.7;
-            display: block;
-            margin-bottom: 3px;
-        }
-        
-        /* BLIK */
-        .blik-code {
-            font-size: 3em;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 10px;
-            padding: 30px;
-            background: #f0fdf4;
-            border-radius: 16px;
-            margin: 20px 0;
-            font-family: 'Courier New', monospace;
-            color: #16a34a;
-        }
-        
-        .blik-timer {
-            text-align: center;
-            color: #64748b;
-            font-size: 0.9em;
-        }
-        
-        .blik-timer span {
-            color: #dc2626;
-            font-weight: 700;
-        }
-        
-        /* Statystyki */
-        .stats-chart {
-            background: #f8fafc;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 25px;
-        }
-        
-        .chart-bar {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .chart-label {
-            width: 120px;
-            font-size: 0.85em;
-            color: #64748b;
-        }
-        
-        .chart-bar-container {
-            flex: 1;
-            height: 24px;
-            background: #e2e8f0;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .chart-bar-fill {
-            height: 100%;
-            border-radius: 12px;
-            transition: width 1s ease;
-        }
-        
-        .chart-bar-fill.green { background: linear-gradient(90deg, #22c55e, #16a34a); }
-        .chart-bar-fill.blue { background: linear-gradient(90deg, #3b82f6, #2563eb); }
-        .chart-bar-fill.purple { background: linear-gradient(90deg, #a855f7, #9333ea); }
-        .chart-bar-fill.orange { background: linear-gradient(90deg, #f97316, #ea580c); }
-        .chart-bar-fill.red { background: linear-gradient(90deg, #ef4444, #dc2626); }
-        
-        .chart-value {
-            width: 80px;
-            text-align: right;
-            font-weight: 600;
-            font-size: 0.9em;
-        }
-        
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: #0f172a;
-            color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            font-weight: 500;
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s;
-            z-index: 1001;
-            max-width: 350px;
-        }
-        
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-        
-        .toast.success { background: #16a34a; }
-        .toast.error { background: #dc2626; }
-        .toast.warning { background: #d97706; }
-        
-        /* Loader */
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .content { padding: 20px; }
-            .form-row { grid-template-columns: 1fr; }
-        }
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <!-- EKRAN LOGOWANIA -->
     <div class="login-screen" id="loginScreen">
-        <div class="login-container">
-            <div class="login-logo">
-                <div class="logo-icon">🏦</div>
-                <h1>SecureBank</h1>
-                <p>Bezpieczna bankowość online</p>
-            </div>
-            
-            <div class="login-error" id="loginError">
-                Nieprawidłowy login lub hasło. Spróbuj ponownie.
-            </div>
-            
-            <form class="login-form" id="loginForm">
-                <div class="form-group">
-                    <label for="loginEmail">Email lub login</label>
-                    <input type="text" id="loginEmail" placeholder="jan.kowalski@email.com" 
-                           data-track-focus="login-email" autocomplete="username">
-                </div>
-                <div class="form-group">
-                    <label for="loginPassword">Hasło</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" 
-                           data-track-focus="login-password" autocomplete="current-password">
-                </div>
-                <button type="submit" class="login-btn" data-track="login-submit">
-                    Zaloguj się
-                </button>
-            </form>
-            
-            <div class="demo-credentials">
-                <h4>🔑 Dane testowe:</h4>
-                <p><strong>Login:</strong> jan.kowalski@email.com</p>
-                <p><strong>Hasło:</strong> demo123</p>
-                <p style="margin-top:10px"><strong>Login 2:</strong> anna.nowak@email.com</p>
-                <p><strong>Hasło:</strong> test456</p>
-            </div>
+      <div class="login-container">
+        <div class="login-logo">
+          <div class="logo-icon">🏦</div>
+          <h1>SecureBank</h1>
+          <p>Bezpieczna bankowość online</p>
         </div>
+
+        <div class="login-error" id="loginError">
+          Nieprawidłowy login lub hasło. Spróbuj ponownie.
+        </div>
+
+        <form class="login-form" id="loginForm">
+          <div class="form-group">
+            <label for="loginEmail">Email lub login</label>
+            <input
+              type="text"
+              id="loginEmail"
+              placeholder="jan.kowalski@email.com"
+              data-track-focus="login-email"
+              autocomplete="username"
+            />
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Hasło</label>
+            <input
+              type="password"
+              id="loginPassword"
+              placeholder="••••••••"
+              data-track-focus="login-password"
+              autocomplete="current-password"
+            />
+          </div>
+          <button type="submit" class="login-btn" data-track="login-submit">Zaloguj się</button>
+        </form>
+
+        <div class="demo-credentials">
+          <h4>🔑 Dane testowe:</h4>
+          <p><strong>Login:</strong> jan.kowalski@email.com</p>
+          <p><strong>Hasło:</strong> demo123</p>
+          <p style="margin-top: 10px"><strong>Login 2:</strong> anna.nowak@email.com</p>
+          <p><strong>Hasło:</strong> test456</p>
+        </div>
+      </div>
     </div>
 
     <!-- APLIKACJA BANKOWA (ukryta do zalogowania) -->
     <div id="bankApp" class="hidden">
-        <!-- Nagłówek -->
-        <header>
-            <div class="logo">
-                <div class="logo-icon">🏦</div>
-                SecureBank
-            </div>
-            <div class="header-actions">
-                <span class="user-info" id="userGreeting">Witaj, Jan Kowalski</span>
-                <button class="logout-btn" data-track="logout-click" id="logoutBtn">Wyloguj</button>
-            </div>
-        </header>
-        
-        <div class="main-container">
-            <!-- Sidebar -->
-            <aside class="sidebar">
-                <ul class="sidebar-menu" id="sidebarMenu">
-                    <li>
-                        <a data-section="dashboard" class="active" data-track="nav-dashboard">
-                            <span class="icon">📊</span> Pulpit
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="history" data-track="nav-history">
-                            <span class="icon">📜</span> Historia
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="transfers" data-track="nav-transfers">
-                            <span class="icon">↔️</span> Przelewy
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="cards" data-track="nav-cards">
-                            <span class="icon">💳</span> Karty
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="blik" data-track="nav-blik">
-                            <span class="icon">📱</span> BLIK
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="stats" data-track="nav-stats">
-                            <span class="icon">📈</span> Statystyki
-                        </a>
-                    </li>
-                    <li>
-                        <a data-section="settings" data-track="nav-settings">
-                            <span class="icon">⚙️</span> Ustawienia
-                        </a>
-                    </li>
-                </ul>
-            </aside>
-            
-            <!-- Content -->
-            <main class="content" data-track-view="main-content">
-                
-                <!-- SEKCJA: PULPIT -->
-                <div class="section active" id="section-dashboard">
-                    <h1 class="page-title">Pulpit</h1>
-                    
-                    <!-- Account Card -->
-                    <div class="account-card" data-track-view="account-card">
-                        <h3>Konto główne</h3>
-                        <div class="account-number" id="accountNumber">PL 12 1234 5678 9012 3456 7890 1234</div>
-                        <div class="account-balance" id="accountBalance">24 567,89 PLN</div>
-                        <div class="account-actions">
-                            <button class="account-btn" data-track="quick-transfer" data-action="open-transfer">
-                                ↗️ Przelew
-                            </button>
-                            <button class="account-btn" data-track="quick-history" data-action="go-history">
-                                📜 Historia
-                            </button>
-                            <button class="account-btn" data-track="quick-blik" data-action="go-blik">
-                                📱 BLIK
-                            </button>
-                            <button class="account-btn" data-track="quick-stats" data-action="go-stats">
-                                📈 Statystyki
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Stats Cards -->
-                    <div class="cards-grid">
-                        <div class="card" data-track-view="card-income">
-                            <div class="card-header">
-                                <span class="card-title">Przychody (grudzień)</span>
-                                <div class="card-icon green">📈</div>
-                            </div>
-                            <div class="card-value" id="monthlyIncome">12 450 zł</div>
-                            <div class="card-change positive">↑ 8.2% vs poprzedni miesiąc</div>
-                        </div>
-                        
-                        <div class="card" data-track-view="card-expenses">
-                            <div class="card-header">
-                                <span class="card-title">Wydatki (grudzień)</span>
-                                <div class="card-icon orange">📉</div>
-                            </div>
-                            <div class="card-value" id="monthlyExpenses">8 234 zł</div>
-                            <div class="card-change negative">↑ 12.5% vs poprzedni miesiąc</div>
-                        </div>
-                        
-                        <div class="card" data-track-view="card-savings">
-                            <div class="card-header">
-                                <span class="card-title">Oszczędności</span>
-                                <div class="card-icon blue">🏦</div>
-                            </div>
-                            <div class="card-value" id="savingsAmount">45 000 zł</div>
-                            <div class="card-change positive">↑ 2.1% (oprocentowanie)</div>
-                        </div>
-                        
-                        <div class="card" data-track-view="card-investments">
-                            <div class="card-header">
-                                <span class="card-title">Portfel inwestycyjny</span>
-                                <div class="card-icon purple">📊</div>
-                            </div>
-                            <div class="card-value" id="investmentsAmount">15 780 zł</div>
-                            <div class="card-change positive">↑ 15.3% ROI</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Recent Transactions -->
-                    <div class="transactions-card" data-track-view="transactions-section">
-                        <div class="transactions-header">
-                            <h3>Ostatnie transakcje</h3>
-                            <a class="view-all-btn" data-track="view-all-transactions" data-action="go-history">
-                                Zobacz wszystkie →
-                            </a>
-                        </div>
-                        <ul class="transaction-list" id="recentTransactions">
-                            <!-- Wypełniane przez JS -->
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- SEKCJA: HISTORIA -->
-                <div class="section" id="section-history">
-                    <h1 class="page-title">Historia transakcji</h1>
-                    
-                    <div class="search-bar">
-                        <input type="text" class="search-input" id="historySearch" 
-                               placeholder="Szukaj transakcji (np. Biedronka, Netflix, przelew...)"
-                               data-track-focus="history-search">
-                        <button class="search-btn" id="historySearchBtn" data-track="search-history">
-                            🔍 Szukaj
-                        </button>
-                    </div>
-                    
-                    <div class="filter-tags" id="filterTags">
-                        <span class="filter-tag active" data-filter="all" data-track="filter-all">Wszystkie</span>
-                        <span class="filter-tag" data-filter="income" data-track="filter-income">Przychody</span>
-                        <span class="filter-tag" data-filter="expense" data-track="filter-expense">Wydatki</span>
-                        <span class="filter-tag" data-filter="transfer" data-track="filter-transfer">Przelewy</span>
-                        <span class="filter-tag" data-filter="shopping" data-track="filter-shopping">Zakupy</span>
-                        <span class="filter-tag" data-filter="bills" data-track="filter-bills">Rachunki</span>
-                        <span class="filter-tag" data-filter="entertainment" data-track="filter-entertainment">Rozrywka</span>
-                    </div>
-                    
-                    <div class="transactions-card">
-                        <ul class="transaction-list" id="allTransactions">
-                            <!-- Wypełniane przez JS -->
-                        </ul>
-                    </div>
-                    
-                    <p id="noResults" class="hidden" style="text-align:center; padding:40px; color:#64748b;">
-                        Brak transakcji spełniających kryteria wyszukiwania.
-                    </p>
-                </div>
-                
-                <!-- SEKCJA: PRZELEWY -->
-                <div class="section" id="section-transfers">
-                    <h1 class="page-title">Nowy przelew</h1>
-                    
-                    <div class="cards-grid" style="margin-bottom:30px;">
-                        <div class="card" style="cursor:pointer;" data-track="transfer-type-standard" data-transfer-type="standard">
-                            <div class="card-header">
-                                <span class="card-title">Przelew zwykły</span>
-                                <div class="card-icon blue">📤</div>
-                            </div>
-                            <p style="color:#64748b; font-size:0.9em;">Przelew na dowolne konto bankowe</p>
-                        </div>
-                        
-                        <div class="card" style="cursor:pointer;" data-track="transfer-type-express" data-transfer-type="express">
-                            <div class="card-header">
-                                <span class="card-title">Przelew ekspresowy</span>
-                                <div class="card-icon orange">⚡</div>
-                            </div>
-                            <p style="color:#64748b; font-size:0.9em;">Natychmiastowe przekazanie środków</p>
-                        </div>
-                        
-                        <div class="card" style="cursor:pointer;" data-track="transfer-type-scheduled" data-transfer-type="scheduled">
-                            <div class="card-header">
-                                <span class="card-title">Przelew zaplanowany</span>
-                                <div class="card-icon purple">📅</div>
-                            </div>
-                            <p style="color:#64748b; font-size:0.9em;">Ustaw datę realizacji</p>
-                        </div>
-                        
-                        <div class="card" style="cursor:pointer;" data-track="transfer-type-recurring" data-transfer-type="recurring">
-                            <div class="card-header">
-                                <span class="card-title">Zlecenie stałe</span>
-                                <div class="card-icon green">🔄</div>
-                            </div>
-                            <p style="color:#64748b; font-size:0.9em;">Cykliczny przelew automatyczny</p>
-                        </div>
-                    </div>
-                    
-                    <div class="card" id="transferFormCard">
-                        <h3 style="margin-bottom:25px;">Formularz przelewu</h3>
-                        <form id="transferForm">
-                            <div class="form-group">
-                                <label>Typ przelewu</label>
-                                <select id="transferType" data-track-focus="transfer-type-select">
-                                    <option value="standard">Przelew zwykły</option>
-                                    <option value="express">Przelew ekspresowy (+5 zł)</option>
-                                    <option value="scheduled">Przelew zaplanowany</option>
-                                    <option value="recurring">Zlecenie stałe</option>
-                                </select>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Imię i nazwisko odbiorcy</label>
-                                    <input type="text" id="recipientName" placeholder="Jan Nowak" 
-                                           data-track-focus="transfer-recipient-name" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Adres odbiorcy</label>
-                                    <input type="text" id="recipientAddress" placeholder="ul. Przykładowa 1, Warszawa"
-                                           data-track-focus="transfer-recipient-address">
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Numer konta odbiorcy</label>
-                                <input type="text" id="recipientAccount" 
-                                       placeholder="PL 00 0000 0000 0000 0000 0000 0000"
-                                       data-track-focus="transfer-account" required>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Kwota</label>
-                                    <input type="number" id="transferAmount" placeholder="0.00" step="0.01" min="0.01"
-                                           data-track-focus="transfer-amount" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Waluta</label>
-                                    <select id="transferCurrency" data-track-focus="transfer-currency">
-                                        <option value="PLN">PLN - Polski złoty</option>
-                                        <option value="EUR">EUR - Euro</option>
-                                        <option value="USD">USD - Dolar amerykański</option>
-                                        <option value="GBP">GBP - Funt brytyjski</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Tytuł przelewu</label>
-                                <input type="text" id="transferTitle" placeholder="Za fakturę nr 123/2024"
-                                       data-track-focus="transfer-title" required>
-                            </div>
-                            
-                            <div class="form-group hidden" id="scheduledDateGroup">
-                                <label>Data realizacji</label>
-                                <input type="date" id="scheduledDate" data-track-focus="transfer-date">
-                            </div>
-                            
-                            <div class="form-group hidden" id="recurringGroup">
-                                <label>Częstotliwość</label>
-                                <select id="recurringFrequency" data-track-focus="transfer-frequency">
-                                    <option value="weekly">Co tydzień</option>
-                                    <option value="monthly">Co miesiąc</option>
-                                    <option value="quarterly">Co kwartał</option>
-                                    <option value="yearly">Co rok</option>
-                                </select>
-                            </div>
-                            
-                            <div class="modal-buttons">
-                                <button type="button" class="modal-btn cancel" id="clearTransferForm">Wyczyść</button>
-                                <button type="submit" class="modal-btn confirm" data-track="submit-transfer">
-                                    Wyślij przelew
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                
-                <!-- SEKCJA: KARTY -->
-                <div class="section" id="section-cards">
-                    <h1 class="page-title">Moje karty</h1>
-                    
-                    <div class="cards-grid">
-                        <div>
-                            <div class="bank-card" data-track-view="card-visa">
-                                <div class="bank-card-type">VISA Debit</div>
-                                <div class="bank-card-number">**** **** **** 4521</div>
-                                <div class="bank-card-footer">
-                                    <div class="bank-card-holder">
-                                        <span class="bank-card-label">POSIADACZ KARTY</span>
-                                        <span id="cardHolder1">JAN KOWALSKI</span>
-                                    </div>
-                                    <div class="bank-card-expiry">
-                                        <span class="bank-card-label">WAŻNA DO</span>
-                                        <span>12/27</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <h4 style="margin-bottom:15px;">Zarządzaj kartą</h4>
-                                <button class="modal-btn confirm" style="width:100%;margin-bottom:10px;" 
-                                        data-track="card-block-visa" data-action="block-card" data-card="visa">
-                                    🔒 Zablokuj kartę
-                                </button>
-                                <button class="modal-btn cancel" style="width:100%;margin-bottom:10px;"
-                                        data-track="card-limits-visa" data-action="show-limits" data-card="visa">
-                                    📊 Limity transakcji
-                                </button>
-                                <button class="modal-btn cancel" style="width:100%;"
-                                        data-track="card-pin-visa" data-action="change-pin" data-card="visa">
-                                    🔑 Zmień PIN
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="bank-card gold" data-track-view="card-mastercard">
-                                <div class="bank-card-type">Mastercard Gold</div>
-                                <div class="bank-card-number">**** **** **** 7890</div>
-                                <div class="bank-card-footer">
-                                    <div class="bank-card-holder">
-                                        <span class="bank-card-label">POSIADACZ KARTY</span>
-                                        <span id="cardHolder2">JAN KOWALSKI</span>
-                                    </div>
-                                    <div class="bank-card-expiry">
-                                        <span class="bank-card-label">WAŻNA DO</span>
-                                        <span>08/26</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card">
-                                <h4 style="margin-bottom:15px;">Zarządzaj kartą</h4>
-                                <button class="modal-btn confirm" style="width:100%;margin-bottom:10px;" 
-                                        data-track="card-block-mc" data-action="block-card" data-card="mastercard">
-                                    🔒 Zablokuj kartę
-                                </button>
-                                <button class="modal-btn cancel" style="width:100%;margin-bottom:10px;"
-                                        data-track="card-limits-mc" data-action="show-limits" data-card="mastercard">
-                                    📊 Limity transakcji
-                                </button>
-                                <button class="modal-btn cancel" style="width:100%;"
-                                        data-track="card-pin-mc" data-action="change-pin" data-card="mastercard">
-                                    🔑 Zmień PIN
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- SEKCJA: BLIK -->
-                <div class="section" id="section-blik">
-                    <h1 class="page-title">Kod BLIK</h1>
-                    
-                    <div class="card" style="max-width:450px; margin:0 auto; text-align:center;">
-                        <h3 style="margin-bottom:10px;">Twój kod BLIK</h3>
-                        <p style="color:#64748b; margin-bottom:20px;">Użyj tego kodu do płatności lub wypłaty z bankomatu</p>
-                        
-                        <div class="blik-code" id="blikCode">--- ---</div>
-                        <div class="blik-timer" id="blikTimer">Wygeneruj nowy kod</div>
-                        
-                        <button class="modal-btn confirm" style="width:100%; margin-top:25px;" 
-                                id="generateBlikBtn" data-track="generate-blik">
-                            📱 Generuj nowy kod BLIK
-                        </button>
-                    </div>
-                    
-                    <div class="cards-grid" style="margin-top:40px;">
-                        <div class="card" data-track-view="blik-phone">
-                            <div class="card-header">
-                                <span class="card-title">BLIK na telefon</span>
-                                <div class="card-icon green">📲</div>
-                            </div>
-                            <div class="form-group" style="margin-top:15px;">
-                                <input type="tel" id="blikPhone" placeholder="Numer telefonu odbiorcy"
-                                       data-track-focus="blik-phone-input">
-                            </div>
-                            <div class="form-group">
-                                <input type="number" id="blikAmount" placeholder="Kwota" step="0.01"
-                                       data-track-focus="blik-amount">
-                            </div>
-                            <button class="modal-btn confirm" style="width:100%;" 
-                                    data-track="send-blik-phone" id="sendBlikPhoneBtn">
-                                Wyślij pieniądze
-                            </button>
-                        </div>
-                        
-                        <div class="card" data-track-view="blik-atm">
-                            <div class="card-header">
-                                <span class="card-title">Wypłata BLIK</span>
-                                <div class="card-icon blue">🏧</div>
-                            </div>
-                            <p style="color:#64748b; font-size:0.9em; margin:15px 0;">
-                                Wybierz kwotę do wypłaty z bankomatu:
-                            </p>
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                                <button class="modal-btn cancel" data-track="blik-atm-50" data-atm-amount="50">50 zł</button>
-                                <button class="modal-btn cancel" data-track="blik-atm-100" data-atm-amount="100">100 zł</button>
-                                <button class="modal-btn cancel" data-track="blik-atm-200" data-atm-amount="200">200 zł</button>
-                                <button class="modal-btn cancel" data-track="blik-atm-500" data-atm-amount="500">500 zł</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- SEKCJA: STATYSTYKI -->
-                <div class="section" id="section-stats">
-                    <h1 class="page-title">Statystyki wydatków</h1>
-                    
-                    <div class="cards-grid">
-                        <div class="card">
-                            <div class="card-header">
-                                <span class="card-title">Grudzień 2024</span>
-                                <div class="card-icon red">📊</div>
-                            </div>
-                            <div class="card-value">8 234 zł</div>
-                            <div class="card-change negative">Całkowite wydatki</div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <span class="card-title">Średnia dzienna</span>
-                                <div class="card-icon orange">📈</div>
-                            </div>
-                            <div class="card-value">411 zł</div>
-                            <div class="card-change">Na dzień</div>
-                        </div>
-                        <div class="card">
-                            <div class="card-header">
-                                <span class="card-title">Największy wydatek</span>
-                                <div class="card-icon purple">💰</div>
-                            </div>
-                            <div class="card-value">1 850 zł</div>
-                            <div class="card-change">Czynsz</div>
-                        </div>
-                    </div>
-                    
-                    <div class="card">
-                        <h3 style="margin-bottom:25px;">Wydatki według kategorii</h3>
-                        <div class="stats-chart">
-                            <div class="chart-bar">
-                                <span class="chart-label">🏠 Mieszkanie</span>
-                                <div class="chart-bar-container">
-                                    <div class="chart-bar-fill blue" style="width:45%;"></div>
-                                </div>
-                                <span class="chart-value">3 200 zł</span>
-                            </div>
-                            <div class="chart-bar">
-                                <span class="chart-label">🛒 Zakupy</span>
-                                <div class="chart-bar-container">
-                                    <div class="chart-bar-fill green" style="width:30%;"></div>
-                                </div>
-                                <span class="chart-value">2 150 zł</span>
-                            </div>
-                            <div class="chart-bar">
-                                <span class="chart-label">🚗 Transport</span>
-                                <div class="chart-bar-container">
-                                    <div class="chart-bar-fill orange" style="width:18%;"></div>
-                                </div>
-                                <span class="chart-value">1 280 zł</span>
-                            </div>
-                            <div class="chart-bar">
-                                <span class="chart-label">🎬 Rozrywka</span>
-                                <div class="chart-bar-container">
-                                    <div class="chart-bar-fill purple" style="width:12%;"></div>
-                                </div>
-                                <span class="chart-value">854 zł</span>
-                            </div>
-                            <div class="chart-bar">
-                                <span class="chart-label">🍔 Jedzenie</span>
-                                <div class="chart-bar-container">
-                                    <div class="chart-bar-fill red" style="width:10%;"></div>
-                                </div>
-                                <span class="chart-value">750 zł</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- SEKCJA: USTAWIENIA -->
-                <div class="section" id="section-settings">
-                    <h1 class="page-title">Ustawienia</h1>
-                    
-                    <div class="card" style="max-width:600px;">
-                        <h3 style="margin-bottom:25px;">Dane osobowe</h3>
-                        <form id="settingsForm">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Imię</label>
-                                    <input type="text" id="settingsFirstName" data-track-focus="settings-firstname">
-                                </div>
-                                <div class="form-group">
-                                    <label>Nazwisko</label>
-                                    <input type="text" id="settingsLastName" data-track-focus="settings-lastname">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Email</label>
-                                <input type="email" id="settingsEmail" data-track-focus="settings-email">
-                            </div>
-                            <div class="form-group">
-                                <label>Telefon</label>
-                                <input type="tel" id="settingsPhone" data-track-focus="settings-phone">
-                            </div>
-                            <div class="form-group">
-                                <label>Adres</label>
-                                <textarea id="settingsAddress" data-track-focus="settings-address"></textarea>
-                            </div>
-                            <button type="submit" class="modal-btn confirm" data-track="save-settings">
-                                Zapisz zmiany
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <div class="card" style="max-width:600px; margin-top:25px;">
-                        <h3 style="margin-bottom:25px;">Zmiana hasła</h3>
-                        <form id="passwordForm">
-                            <div class="form-group">
-                                <label>Aktualne hasło</label>
-                                <input type="password" id="currentPassword" data-track-focus="settings-current-pass">
-                            </div>
-                            <div class="form-group">
-                                <label>Nowe hasło</label>
-                                <input type="password" id="newPassword" data-track-focus="settings-new-pass">
-                            </div>
-                            <div class="form-group">
-                                <label>Powtórz nowe hasło</label>
-                                <input type="password" id="confirmPassword" data-track-focus="settings-confirm-pass">
-                            </div>
-                            <button type="submit" class="modal-btn confirm" data-track="change-password">
-                                Zmień hasło
-                            </button>
-                        </form>
-                    </div>
-                    
-                    <div class="card" style="max-width:600px; margin-top:25px;">
-                        <h3 style="margin-bottom:25px;">Powiadomienia</h3>
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f1f5f9;">
-                            <span>Powiadomienia email</span>
-                            <input type="checkbox" id="notifyEmail" checked data-track="toggle-notify-email">
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f1f5f9;">
-                            <span>Powiadomienia SMS</span>
-                            <input type="checkbox" id="notifySms" checked data-track="toggle-notify-sms">
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0; border-bottom:1px solid #f1f5f9;">
-                            <span>Powiadomienia push</span>
-                            <input type="checkbox" id="notifyPush" data-track="toggle-notify-push">
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; padding:15px 0;">
-                            <span>Alerty bezpieczeństwa</span>
-                            <input type="checkbox" id="notifySecurity" checked data-track="toggle-notify-security">
-                        </div>
-                    </div>
-                </div>
-            </main>
+      <!-- Nagłówek -->
+      <header>
+        <div class="logo">
+          <div class="logo-icon">🏦</div>
+          SecureBank
         </div>
+        <div class="header-actions">
+          <span class="user-info" id="userGreeting">Witaj, Jan Kowalski</span>
+          <button class="logout-btn" data-track="logout-click" id="logoutBtn">Wyloguj</button>
+        </div>
+      </header>
+
+      <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <ul class="sidebar-menu" id="sidebarMenu">
+            <li>
+              <a data-section="dashboard" class="active" data-track="nav-dashboard">
+                <span class="icon">📊</span> Pulpit
+              </a>
+            </li>
+            <li>
+              <a data-section="history" data-track="nav-history">
+                <span class="icon">📜</span> Historia
+              </a>
+            </li>
+            <li>
+              <a data-section="transfers" data-track="nav-transfers">
+                <span class="icon">↔️</span> Przelewy
+              </a>
+            </li>
+            <li>
+              <a data-section="cards" data-track="nav-cards">
+                <span class="icon">💳</span> Karty
+              </a>
+            </li>
+            <li>
+              <a data-section="blik" data-track="nav-blik"> <span class="icon">📱</span> BLIK </a>
+            </li>
+            <li>
+              <a data-section="stats" data-track="nav-stats">
+                <span class="icon">📈</span> Statystyki
+              </a>
+            </li>
+            <li>
+              <a data-section="settings" data-track="nav-settings">
+                <span class="icon">⚙️</span> Ustawienia
+              </a>
+            </li>
+          </ul>
+        </aside>
+
+        <!-- Content -->
+        <main class="content" data-track-view="main-content">
+          <!-- SEKCJA: PULPIT -->
+          <div class="section active" id="section-dashboard">
+            <h1 class="page-title">Pulpit</h1>
+
+            <!-- Account Card -->
+            <div class="account-card" data-track-view="account-card">
+              <h3>Konto główne</h3>
+              <div class="account-number" id="accountNumber">
+                PL 12 1234 5678 9012 3456 7890 1234
+              </div>
+              <div class="account-balance" id="accountBalance">24 567,89 PLN</div>
+              <div class="account-actions">
+                <button class="account-btn" data-track="quick-transfer" data-action="open-transfer">
+                  ↗️ Przelew
+                </button>
+                <button class="account-btn" data-track="quick-history" data-action="go-history">
+                  📜 Historia
+                </button>
+                <button class="account-btn" data-track="quick-blik" data-action="go-blik">
+                  📱 BLIK
+                </button>
+                <button class="account-btn" data-track="quick-stats" data-action="go-stats">
+                  📈 Statystyki
+                </button>
+              </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="cards-grid">
+              <div class="card" data-track-view="card-income">
+                <div class="card-header">
+                  <span class="card-title">Przychody (grudzień)</span>
+                  <div class="card-icon green">📈</div>
+                </div>
+                <div class="card-value" id="monthlyIncome">12 450 zł</div>
+                <div class="card-change positive">↑ 8.2% vs poprzedni miesiąc</div>
+              </div>
+
+              <div class="card" data-track-view="card-expenses">
+                <div class="card-header">
+                  <span class="card-title">Wydatki (grudzień)</span>
+                  <div class="card-icon orange">📉</div>
+                </div>
+                <div class="card-value" id="monthlyExpenses">8 234 zł</div>
+                <div class="card-change negative">↑ 12.5% vs poprzedni miesiąc</div>
+              </div>
+
+              <div class="card" data-track-view="card-savings">
+                <div class="card-header">
+                  <span class="card-title">Oszczędności</span>
+                  <div class="card-icon blue">🏦</div>
+                </div>
+                <div class="card-value" id="savingsAmount">45 000 zł</div>
+                <div class="card-change positive">↑ 2.1% (oprocentowanie)</div>
+              </div>
+
+              <div class="card" data-track-view="card-investments">
+                <div class="card-header">
+                  <span class="card-title">Portfel inwestycyjny</span>
+                  <div class="card-icon purple">📊</div>
+                </div>
+                <div class="card-value" id="investmentsAmount">15 780 zł</div>
+                <div class="card-change positive">↑ 15.3% ROI</div>
+              </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="transactions-card" data-track-view="transactions-section">
+              <div class="transactions-header">
+                <h3>Ostatnie transakcje</h3>
+                <a class="view-all-btn" data-track="view-all-transactions" data-action="go-history">
+                  Zobacz wszystkie →
+                </a>
+              </div>
+              <ul class="transaction-list" id="recentTransactions">
+                <!-- Wypełniane przez JS -->
+              </ul>
+            </div>
+          </div>
+
+          <!-- SEKCJA: HISTORIA -->
+          <div class="section" id="section-history">
+            <h1 class="page-title">Historia transakcji</h1>
+
+            <div class="search-bar">
+              <input
+                type="text"
+                class="search-input"
+                id="historySearch"
+                placeholder="Szukaj transakcji (np. Biedronka, Netflix, przelew...)"
+                data-track-focus="history-search"
+              />
+              <button class="search-btn" id="historySearchBtn" data-track="search-history">
+                🔍 Szukaj
+              </button>
+            </div>
+
+            <div class="filter-tags" id="filterTags">
+              <span class="filter-tag active" data-filter="all" data-track="filter-all"
+                >Wszystkie</span
+              >
+              <span class="filter-tag" data-filter="income" data-track="filter-income"
+                >Przychody</span
+              >
+              <span class="filter-tag" data-filter="expense" data-track="filter-expense"
+                >Wydatki</span
+              >
+              <span class="filter-tag" data-filter="transfer" data-track="filter-transfer"
+                >Przelewy</span
+              >
+              <span class="filter-tag" data-filter="shopping" data-track="filter-shopping"
+                >Zakupy</span
+              >
+              <span class="filter-tag" data-filter="bills" data-track="filter-bills">Rachunki</span>
+              <span class="filter-tag" data-filter="entertainment" data-track="filter-entertainment"
+                >Rozrywka</span
+              >
+            </div>
+
+            <div class="transactions-card">
+              <ul class="transaction-list" id="allTransactions">
+                <!-- Wypełniane przez JS -->
+              </ul>
+            </div>
+
+            <p
+              id="noResults"
+              class="hidden"
+              style="text-align: center; padding: 40px; color: #64748b"
+            >
+              Brak transakcji spełniających kryteria wyszukiwania.
+            </p>
+          </div>
+
+          <!-- SEKCJA: PRZELEWY -->
+          <div class="section" id="section-transfers">
+            <h1 class="page-title">Nowy przelew</h1>
+
+            <div class="cards-grid" style="margin-bottom: 30px">
+              <div
+                class="card"
+                style="cursor: pointer"
+                data-track="transfer-type-standard"
+                data-transfer-type="standard"
+              >
+                <div class="card-header">
+                  <span class="card-title">Przelew zwykły</span>
+                  <div class="card-icon blue">📤</div>
+                </div>
+                <p style="color: #64748b; font-size: 0.9em">Przelew na dowolne konto bankowe</p>
+              </div>
+
+              <div
+                class="card"
+                style="cursor: pointer"
+                data-track="transfer-type-express"
+                data-transfer-type="express"
+              >
+                <div class="card-header">
+                  <span class="card-title">Przelew ekspresowy</span>
+                  <div class="card-icon orange">⚡</div>
+                </div>
+                <p style="color: #64748b; font-size: 0.9em">Natychmiastowe przekazanie środków</p>
+              </div>
+
+              <div
+                class="card"
+                style="cursor: pointer"
+                data-track="transfer-type-scheduled"
+                data-transfer-type="scheduled"
+              >
+                <div class="card-header">
+                  <span class="card-title">Przelew zaplanowany</span>
+                  <div class="card-icon purple">📅</div>
+                </div>
+                <p style="color: #64748b; font-size: 0.9em">Ustaw datę realizacji</p>
+              </div>
+
+              <div
+                class="card"
+                style="cursor: pointer"
+                data-track="transfer-type-recurring"
+                data-transfer-type="recurring"
+              >
+                <div class="card-header">
+                  <span class="card-title">Zlecenie stałe</span>
+                  <div class="card-icon green">🔄</div>
+                </div>
+                <p style="color: #64748b; font-size: 0.9em">Cykliczny przelew automatyczny</p>
+              </div>
+            </div>
+
+            <div class="card" id="transferFormCard">
+              <h3 style="margin-bottom: 25px">Formularz przelewu</h3>
+              <form id="transferForm">
+                <div class="form-group">
+                  <label>Typ przelewu</label>
+                  <select id="transferType" data-track-focus="transfer-type-select">
+                    <option value="standard">Przelew zwykły</option>
+                    <option value="express">Przelew ekspresowy (+5 zł)</option>
+                    <option value="scheduled">Przelew zaplanowany</option>
+                    <option value="recurring">Zlecenie stałe</option>
+                  </select>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Imię i nazwisko odbiorcy</label>
+                    <input
+                      type="text"
+                      id="recipientName"
+                      placeholder="Jan Nowak"
+                      data-track-focus="transfer-recipient-name"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Adres odbiorcy</label>
+                    <input
+                      type="text"
+                      id="recipientAddress"
+                      placeholder="ul. Przykładowa 1, Warszawa"
+                      data-track-focus="transfer-recipient-address"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Numer konta odbiorcy</label>
+                  <input
+                    type="text"
+                    id="recipientAccount"
+                    placeholder="PL 00 0000 0000 0000 0000 0000 0000"
+                    data-track-focus="transfer-account"
+                    required
+                  />
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Kwota</label>
+                    <input
+                      type="number"
+                      id="transferAmount"
+                      placeholder="0.00"
+                      step="0.01"
+                      min="0.01"
+                      data-track-focus="transfer-amount"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Waluta</label>
+                    <select id="transferCurrency" data-track-focus="transfer-currency">
+                      <option value="PLN">PLN - Polski złoty</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="USD">USD - Dolar amerykański</option>
+                      <option value="GBP">GBP - Funt brytyjski</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>Tytuł przelewu</label>
+                  <input
+                    type="text"
+                    id="transferTitle"
+                    placeholder="Za fakturę nr 123/2024"
+                    data-track-focus="transfer-title"
+                    required
+                  />
+                </div>
+
+                <div class="form-group hidden" id="scheduledDateGroup">
+                  <label>Data realizacji</label>
+                  <input type="date" id="scheduledDate" data-track-focus="transfer-date" />
+                </div>
+
+                <div class="form-group hidden" id="recurringGroup">
+                  <label>Częstotliwość</label>
+                  <select id="recurringFrequency" data-track-focus="transfer-frequency">
+                    <option value="weekly">Co tydzień</option>
+                    <option value="monthly">Co miesiąc</option>
+                    <option value="quarterly">Co kwartał</option>
+                    <option value="yearly">Co rok</option>
+                  </select>
+                </div>
+
+                <div class="modal-buttons">
+                  <button type="button" class="modal-btn cancel" id="clearTransferForm">
+                    Wyczyść
+                  </button>
+                  <button type="submit" class="modal-btn confirm" data-track="submit-transfer">
+                    Wyślij przelew
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- SEKCJA: KARTY -->
+          <div class="section" id="section-cards">
+            <h1 class="page-title">Moje karty</h1>
+
+            <div class="cards-grid">
+              <div>
+                <div class="bank-card" data-track-view="card-visa">
+                  <div class="bank-card-type">VISA Debit</div>
+                  <div class="bank-card-number">**** **** **** 4521</div>
+                  <div class="bank-card-footer">
+                    <div class="bank-card-holder">
+                      <span class="bank-card-label">POSIADACZ KARTY</span>
+                      <span id="cardHolder1">JAN KOWALSKI</span>
+                    </div>
+                    <div class="bank-card-expiry">
+                      <span class="bank-card-label">WAŻNA DO</span>
+                      <span>12/27</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <h4 style="margin-bottom: 15px">Zarządzaj kartą</h4>
+                  <button
+                    class="modal-btn confirm"
+                    style="width: 100%; margin-bottom: 10px"
+                    data-track="card-block-visa"
+                    data-action="block-card"
+                    data-card="visa"
+                  >
+                    🔒 Zablokuj kartę
+                  </button>
+                  <button
+                    class="modal-btn cancel"
+                    style="width: 100%; margin-bottom: 10px"
+                    data-track="card-limits-visa"
+                    data-action="show-limits"
+                    data-card="visa"
+                  >
+                    📊 Limity transakcji
+                  </button>
+                  <button
+                    class="modal-btn cancel"
+                    style="width: 100%"
+                    data-track="card-pin-visa"
+                    data-action="change-pin"
+                    data-card="visa"
+                  >
+                    🔑 Zmień PIN
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div class="bank-card gold" data-track-view="card-mastercard">
+                  <div class="bank-card-type">Mastercard Gold</div>
+                  <div class="bank-card-number">**** **** **** 7890</div>
+                  <div class="bank-card-footer">
+                    <div class="bank-card-holder">
+                      <span class="bank-card-label">POSIADACZ KARTY</span>
+                      <span id="cardHolder2">JAN KOWALSKI</span>
+                    </div>
+                    <div class="bank-card-expiry">
+                      <span class="bank-card-label">WAŻNA DO</span>
+                      <span>08/26</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="card">
+                  <h4 style="margin-bottom: 15px">Zarządzaj kartą</h4>
+                  <button
+                    class="modal-btn confirm"
+                    style="width: 100%; margin-bottom: 10px"
+                    data-track="card-block-mc"
+                    data-action="block-card"
+                    data-card="mastercard"
+                  >
+                    🔒 Zablokuj kartę
+                  </button>
+                  <button
+                    class="modal-btn cancel"
+                    style="width: 100%; margin-bottom: 10px"
+                    data-track="card-limits-mc"
+                    data-action="show-limits"
+                    data-card="mastercard"
+                  >
+                    📊 Limity transakcji
+                  </button>
+                  <button
+                    class="modal-btn cancel"
+                    style="width: 100%"
+                    data-track="card-pin-mc"
+                    data-action="change-pin"
+                    data-card="mastercard"
+                  >
+                    🔑 Zmień PIN
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKCJA: BLIK -->
+          <div class="section" id="section-blik">
+            <h1 class="page-title">Kod BLIK</h1>
+
+            <div class="card" style="max-width: 450px; margin: 0 auto; text-align: center">
+              <h3 style="margin-bottom: 10px">Twój kod BLIK</h3>
+              <p style="color: #64748b; margin-bottom: 20px">
+                Użyj tego kodu do płatności lub wypłaty z bankomatu
+              </p>
+
+              <div class="blik-code" id="blikCode">--- ---</div>
+              <div class="blik-timer" id="blikTimer">Wygeneruj nowy kod</div>
+
+              <button
+                class="modal-btn confirm"
+                style="width: 100%; margin-top: 25px"
+                id="generateBlikBtn"
+                data-track="generate-blik"
+              >
+                📱 Generuj nowy kod BLIK
+              </button>
+            </div>
+
+            <div class="cards-grid" style="margin-top: 40px">
+              <div class="card" data-track-view="blik-phone">
+                <div class="card-header">
+                  <span class="card-title">BLIK na telefon</span>
+                  <div class="card-icon green">📲</div>
+                </div>
+                <div class="form-group" style="margin-top: 15px">
+                  <input
+                    type="tel"
+                    id="blikPhone"
+                    placeholder="Numer telefonu odbiorcy"
+                    data-track-focus="blik-phone-input"
+                  />
+                </div>
+                <div class="form-group">
+                  <input
+                    type="number"
+                    id="blikAmount"
+                    placeholder="Kwota"
+                    step="0.01"
+                    data-track-focus="blik-amount"
+                  />
+                </div>
+                <button
+                  class="modal-btn confirm"
+                  style="width: 100%"
+                  data-track="send-blik-phone"
+                  id="sendBlikPhoneBtn"
+                >
+                  Wyślij pieniądze
+                </button>
+              </div>
+
+              <div class="card" data-track-view="blik-atm">
+                <div class="card-header">
+                  <span class="card-title">Wypłata BLIK</span>
+                  <div class="card-icon blue">🏧</div>
+                </div>
+                <p style="color: #64748b; font-size: 0.9em; margin: 15px 0">
+                  Wybierz kwotę do wypłaty z bankomatu:
+                </p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px">
+                  <button class="modal-btn cancel" data-track="blik-atm-50" data-atm-amount="50">
+                    50 zł
+                  </button>
+                  <button class="modal-btn cancel" data-track="blik-atm-100" data-atm-amount="100">
+                    100 zł
+                  </button>
+                  <button class="modal-btn cancel" data-track="blik-atm-200" data-atm-amount="200">
+                    200 zł
+                  </button>
+                  <button class="modal-btn cancel" data-track="blik-atm-500" data-atm-amount="500">
+                    500 zł
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKCJA: STATYSTYKI -->
+          <div class="section" id="section-stats">
+            <h1 class="page-title">Statystyki wydatków</h1>
+
+            <div class="cards-grid">
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">Grudzień 2024</span>
+                  <div class="card-icon red">📊</div>
+                </div>
+                <div class="card-value">8 234 zł</div>
+                <div class="card-change negative">Całkowite wydatki</div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">Średnia dzienna</span>
+                  <div class="card-icon orange">📈</div>
+                </div>
+                <div class="card-value">411 zł</div>
+                <div class="card-change">Na dzień</div>
+              </div>
+              <div class="card">
+                <div class="card-header">
+                  <span class="card-title">Największy wydatek</span>
+                  <div class="card-icon purple">💰</div>
+                </div>
+                <div class="card-value">1 850 zł</div>
+                <div class="card-change">Czynsz</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <h3 style="margin-bottom: 25px">Wydatki według kategorii</h3>
+              <div class="stats-chart">
+                <div class="chart-bar">
+                  <span class="chart-label">🏠 Mieszkanie</span>
+                  <div class="chart-bar-container">
+                    <div class="chart-bar-fill blue" style="width: 45%"></div>
+                  </div>
+                  <span class="chart-value">3 200 zł</span>
+                </div>
+                <div class="chart-bar">
+                  <span class="chart-label">🛒 Zakupy</span>
+                  <div class="chart-bar-container">
+                    <div class="chart-bar-fill green" style="width: 30%"></div>
+                  </div>
+                  <span class="chart-value">2 150 zł</span>
+                </div>
+                <div class="chart-bar">
+                  <span class="chart-label">🚗 Transport</span>
+                  <div class="chart-bar-container">
+                    <div class="chart-bar-fill orange" style="width: 18%"></div>
+                  </div>
+                  <span class="chart-value">1 280 zł</span>
+                </div>
+                <div class="chart-bar">
+                  <span class="chart-label">🎬 Rozrywka</span>
+                  <div class="chart-bar-container">
+                    <div class="chart-bar-fill purple" style="width: 12%"></div>
+                  </div>
+                  <span class="chart-value">854 zł</span>
+                </div>
+                <div class="chart-bar">
+                  <span class="chart-label">🍔 Jedzenie</span>
+                  <div class="chart-bar-container">
+                    <div class="chart-bar-fill red" style="width: 10%"></div>
+                  </div>
+                  <span class="chart-value">750 zł</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKCJA: USTAWIENIA -->
+          <div class="section" id="section-settings">
+            <h1 class="page-title">Ustawienia</h1>
+
+            <div class="card" style="max-width: 600px">
+              <h3 style="margin-bottom: 25px">Dane osobowe</h3>
+              <form id="settingsForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Imię</label>
+                    <input
+                      type="text"
+                      id="settingsFirstName"
+                      data-track-focus="settings-firstname"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Nazwisko</label>
+                    <input type="text" id="settingsLastName" data-track-focus="settings-lastname" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="settingsEmail" data-track-focus="settings-email" />
+                </div>
+                <div class="form-group">
+                  <label>Telefon</label>
+                  <input type="tel" id="settingsPhone" data-track-focus="settings-phone" />
+                </div>
+                <div class="form-group">
+                  <label>Adres</label>
+                  <textarea id="settingsAddress" data-track-focus="settings-address"></textarea>
+                </div>
+                <button type="submit" class="modal-btn confirm" data-track="save-settings">
+                  Zapisz zmiany
+                </button>
+              </form>
+            </div>
+
+            <div class="card" style="max-width: 600px; margin-top: 25px">
+              <h3 style="margin-bottom: 25px">Zmiana hasła</h3>
+              <form id="passwordForm">
+                <div class="form-group">
+                  <label>Aktualne hasło</label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    data-track-focus="settings-current-pass"
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Nowe hasło</label>
+                  <input type="password" id="newPassword" data-track-focus="settings-new-pass" />
+                </div>
+                <div class="form-group">
+                  <label>Powtórz nowe hasło</label>
+                  <input
+                    type="password"
+                    id="confirmPassword"
+                    data-track-focus="settings-confirm-pass"
+                  />
+                </div>
+                <button type="submit" class="modal-btn confirm" data-track="change-password">
+                  Zmień hasło
+                </button>
+              </form>
+            </div>
+
+            <div class="card" style="max-width: 600px; margin-top: 25px">
+              <h3 style="margin-bottom: 25px">Powiadomienia</h3>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 15px 0;
+                  border-bottom: 1px solid #f1f5f9;
+                "
+              >
+                <span>Powiadomienia email</span>
+                <input type="checkbox" id="notifyEmail" checked data-track="toggle-notify-email" />
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 15px 0;
+                  border-bottom: 1px solid #f1f5f9;
+                "
+              >
+                <span>Powiadomienia SMS</span>
+                <input type="checkbox" id="notifySms" checked data-track="toggle-notify-sms" />
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 15px 0;
+                  border-bottom: 1px solid #f1f5f9;
+                "
+              >
+                <span>Powiadomienia push</span>
+                <input type="checkbox" id="notifyPush" data-track="toggle-notify-push" />
+              </div>
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  padding: 15px 0;
+                "
+              >
+                <span>Alerty bezpieczeństwa</span>
+                <input
+                  type="checkbox"
+                  id="notifySecurity"
+                  checked
+                  data-track="toggle-notify-security"
+                />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
-    
+
     <!-- MODAL: Szczegóły transakcji -->
     <div class="modal-overlay" id="transactionModal">
-        <div class="modal">
-            <h2 id="transactionModalTitle">📄 Szczegóły transakcji</h2>
-            <div id="transactionDetails"></div>
-            <div class="modal-buttons">
-                <button type="button" class="modal-btn cancel" id="closeTransactionModal">Zamknij</button>
-                <button type="button" class="modal-btn confirm" data-track="download-confirmation">
-                    📥 Pobierz potwierdzenie
-                </button>
-            </div>
+      <div class="modal">
+        <h2 id="transactionModalTitle">📄 Szczegóły transakcji</h2>
+        <div id="transactionDetails"></div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn cancel" id="closeTransactionModal">Zamknij</button>
+          <button type="button" class="modal-btn confirm" data-track="download-confirmation">
+            📥 Pobierz potwierdzenie
+          </button>
         </div>
+      </div>
     </div>
-    
+
     <!-- MODAL: Blokada karty -->
     <div class="modal-overlay" id="cardBlockModal">
-        <div class="modal">
-            <h2>🔒 Blokada karty</h2>
-            <p style="margin-bottom:20px; color:#64748b;">
-                Czy na pewno chcesz zablokować kartę <strong id="blockCardName"></strong>?
-            </p>
-            <p style="margin-bottom:20px; color:#dc2626; font-size:0.9em;">
-                ⚠️ Blokada karty jest nieodwracalna. Aby odblokować kartę, skontaktuj się z infolinią.
-            </p>
-            <div class="form-group">
-                <label>Podaj powód blokady</label>
-                <select id="blockReason" data-track-focus="block-reason">
-                    <option value="">Wybierz powód...</option>
-                    <option value="lost">Zgubiona karta</option>
-                    <option value="stolen">Skradziona karta</option>
-                    <option value="fraud">Podejrzenie oszustwa</option>
-                    <option value="temporary">Tymczasowa blokada</option>
-                </select>
-            </div>
-            <div class="modal-buttons">
-                <button type="button" class="modal-btn cancel" id="cancelBlockCard">Anuluj</button>
-                <button type="button" class="modal-btn danger" id="confirmBlockCard" data-track="confirm-block-card">
-                    Zablokuj kartę
-                </button>
-            </div>
+      <div class="modal">
+        <h2>🔒 Blokada karty</h2>
+        <p style="margin-bottom: 20px; color: #64748b">
+          Czy na pewno chcesz zablokować kartę <strong id="blockCardName"></strong>?
+        </p>
+        <p style="margin-bottom: 20px; color: #dc2626; font-size: 0.9em">
+          ⚠️ Blokada karty jest nieodwracalna. Aby odblokować kartę, skontaktuj się z infolinią.
+        </p>
+        <div class="form-group">
+          <label>Podaj powód blokady</label>
+          <select id="blockReason" data-track-focus="block-reason">
+            <option value="">Wybierz powód...</option>
+            <option value="lost">Zgubiona karta</option>
+            <option value="stolen">Skradziona karta</option>
+            <option value="fraud">Podejrzenie oszustwa</option>
+            <option value="temporary">Tymczasowa blokada</option>
+          </select>
         </div>
+        <div class="modal-buttons">
+          <button type="button" class="modal-btn cancel" id="cancelBlockCard">Anuluj</button>
+          <button
+            type="button"
+            class="modal-btn danger"
+            id="confirmBlockCard"
+            data-track="confirm-block-card"
+          >
+            Zablokuj kartę
+          </button>
+        </div>
+      </div>
     </div>
-    
+
     <!-- MODAL: Limity karty -->
     <div class="modal-overlay" id="cardLimitsModal">
-        <div class="modal">
-            <h2>📊 Limity transakcji</h2>
-            <form id="limitsForm">
-                <div class="form-group">
-                    <label>Dzienny limit płatności</label>
-                    <input type="number" id="limitDaily" value="5000" data-track-focus="limit-daily">
-                </div>
-                <div class="form-group">
-                    <label>Dzienny limit wypłat</label>
-                    <input type="number" id="limitAtm" value="2000" data-track-focus="limit-atm">
-                </div>
-                <div class="form-group">
-                    <label>Limit pojedynczej transakcji</label>
-                    <input type="number" id="limitSingle" value="3000" data-track-focus="limit-single">
-                </div>
-                <div class="form-group">
-                    <label>Limit płatności internetowych</label>
-                    <input type="number" id="limitOnline" value="2000" data-track-focus="limit-online">
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="modal-btn cancel" id="cancelLimits">Anuluj</button>
-                    <button type="submit" class="modal-btn confirm" data-track="save-limits">Zapisz limity</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal">
+        <h2>📊 Limity transakcji</h2>
+        <form id="limitsForm">
+          <div class="form-group">
+            <label>Dzienny limit płatności</label>
+            <input type="number" id="limitDaily" value="5000" data-track-focus="limit-daily" />
+          </div>
+          <div class="form-group">
+            <label>Dzienny limit wypłat</label>
+            <input type="number" id="limitAtm" value="2000" data-track-focus="limit-atm" />
+          </div>
+          <div class="form-group">
+            <label>Limit pojedynczej transakcji</label>
+            <input type="number" id="limitSingle" value="3000" data-track-focus="limit-single" />
+          </div>
+          <div class="form-group">
+            <label>Limit płatności internetowych</label>
+            <input type="number" id="limitOnline" value="2000" data-track-focus="limit-online" />
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="modal-btn cancel" id="cancelLimits">Anuluj</button>
+            <button type="submit" class="modal-btn confirm" data-track="save-limits">
+              Zapisz limity
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-    
+
     <!-- MODAL: Zmiana PIN -->
     <div class="modal-overlay" id="changePinModal">
-        <div class="modal">
-            <h2>🔑 Zmiana kodu PIN</h2>
-            <form id="pinForm">
-                <div class="form-group">
-                    <label>Aktualny PIN</label>
-                    <input type="password" id="currentPin" maxlength="4" pattern="[0-9]{4}" 
-                           placeholder="****" data-track-focus="current-pin" required>
-                </div>
-                <div class="form-group">
-                    <label>Nowy PIN</label>
-                    <input type="password" id="newPin" maxlength="4" pattern="[0-9]{4}" 
-                           placeholder="****" data-track-focus="new-pin" required>
-                </div>
-                <div class="form-group">
-                    <label>Powtórz nowy PIN</label>
-                    <input type="password" id="confirmPin" maxlength="4" pattern="[0-9]{4}" 
-                           placeholder="****" data-track-focus="confirm-pin" required>
-                </div>
-                <div class="modal-buttons">
-                    <button type="button" class="modal-btn cancel" id="cancelPin">Anuluj</button>
-                    <button type="submit" class="modal-btn confirm" data-track="confirm-change-pin">Zmień PIN</button>
-                </div>
-            </form>
-        </div>
+      <div class="modal">
+        <h2>🔑 Zmiana kodu PIN</h2>
+        <form id="pinForm">
+          <div class="form-group">
+            <label>Aktualny PIN</label>
+            <input
+              type="password"
+              id="currentPin"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              placeholder="****"
+              data-track-focus="current-pin"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Nowy PIN</label>
+            <input
+              type="password"
+              id="newPin"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              placeholder="****"
+              data-track-focus="new-pin"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>Powtórz nowy PIN</label>
+            <input
+              type="password"
+              id="confirmPin"
+              maxlength="4"
+              pattern="[0-9]{4}"
+              placeholder="****"
+              data-track-focus="confirm-pin"
+              required
+            />
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="modal-btn cancel" id="cancelPin">Anuluj</button>
+            <button type="submit" class="modal-btn confirm" data-track="confirm-change-pin">
+              Zmień PIN
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
-    
+
     <!-- Toast -->
     <div class="toast" id="toast"></div>
-    
+
     <!-- Tracker - połączenie z serwerem inwigilatora -->
-    <script src="/tracker.js" data-site-id="bank" data-endpoint="http://localhost:3000/api" data-debug="true" async></script>
-    
+    <script
+      src="/tracker.js"
+      data-site-id="bank"
+      data-endpoint="http://localhost:3000/api"
+      data-debug="true"
+      async
+    ></script>
+
     <script>
-        // ==================== DANE UŻYTKOWNIKÓW ====================
-        const USERS = {
-            'jan.kowalski@email.com': {
-                password: 'demo123',
-                firstName: 'Jan',
-                lastName: 'Kowalski',
-                phone: '+48 600 123 456',
-                address: 'ul. Bankowa 15/3\n00-001 Warszawa',
-                accountNumber: 'PL 12 1234 5678 9012 3456 7890 1234',
-                balance: 24567.89,
-                savings: 45000,
-                investments: 15780
-            },
-            'anna.nowak@email.com': {
-                password: 'test456',
-                firstName: 'Anna',
-                lastName: 'Nowak',
-                phone: '+48 601 987 654',
-                address: 'ul. Złota 44/12\n00-120 Warszawa',
-                accountNumber: 'PL 98 7654 3210 9876 5432 1098 7654',
-                balance: 156234.50,
-                savings: 85000,
-                investments: 42500
-            }
-        };
-        
-        // ==================== DANE TRANSAKCJI ====================
-        const TRANSACTIONS = [
-            { id: 1, icon: '🛒', title: 'Biedronka', date: 'Dzisiaj, 14:32', amount: -156.78, type: 'expense', category: 'shopping', account: 'PL 22 1111 2222 3333 4444 5555 6666' },
-            { id: 2, icon: '💼', title: 'Wynagrodzenie - TechCorp', date: 'Wczoraj, 08:00', amount: 12450.00, type: 'income', category: 'salary', account: 'PL 33 1111 2222 3333 4444 5555 7777' },
-            { id: 3, icon: '⚡', title: 'PGE Obrót', date: '18.12.2024, 10:15', amount: -342.50, type: 'expense', category: 'bills', account: 'PL 44 1111 2222 3333 4444 5555 8888' },
-            { id: 4, icon: '🏠', title: 'Czynsz - Wspólnota Mieszkaniowa', date: '15.12.2024, 09:00', amount: -1850.00, type: 'expense', category: 'bills', account: 'PL 55 1111 2222 3333 4444 5555 9999' },
-            { id: 5, icon: '🎬', title: 'Netflix', date: '14.12.2024, 12:00', amount: -49.00, type: 'expense', category: 'entertainment', account: 'IE 12 BOFI 9000 0112 3456 78' },
-            { id: 6, icon: '🚗', title: 'Orlen - paliwo', date: '13.12.2024, 18:45', amount: -287.30, type: 'expense', category: 'transport', account: 'Terminal POS' },
-            { id: 7, icon: '📱', title: 'Orange - abonament', date: '10.12.2024, 00:00', amount: -89.00, type: 'expense', category: 'bills', account: 'PL 66 1111 2222 3333 4444 5555 0000' },
-            { id: 8, icon: '🍕', title: 'Pyszne.pl', date: '08.12.2024, 20:15', amount: -67.50, type: 'expense', category: 'food', account: 'Płatność BLIK' },
-            { id: 9, icon: '↔️', title: 'Przelew do: Anna Nowak', date: '05.12.2024, 14:30', amount: -500.00, type: 'transfer', category: 'transfer', account: 'PL 98 7654 3210 9876 5432 1098 7654' },
-            { id: 10, icon: '💰', title: 'Zwrot podatku - US Warszawa', date: '01.12.2024, 10:00', amount: 1234.00, type: 'income', category: 'refund', account: 'PL 77 1111 2222 3333 4444 5555 1111' },
-            { id: 11, icon: '🏋️', title: 'Fitness Club - karnet', date: '01.12.2024, 08:00', amount: -149.00, type: 'expense', category: 'entertainment', account: 'PL 88 1111 2222 3333 4444 5555 2222' },
-            { id: 12, icon: '💊', title: 'Apteka Dr.Max', date: '28.11.2024, 16:20', amount: -78.90, type: 'expense', category: 'health', account: 'Terminal POS' },
-            { id: 13, icon: '🎁', title: 'Amazon.de - prezent', date: '25.11.2024, 22:10', amount: -234.99, type: 'expense', category: 'shopping', account: 'DE 89 3704 0044 0532 0130 00' },
-            { id: 14, icon: '↔️', title: 'Przelew od: Rodzice', date: '20.11.2024, 12:00', amount: 2000.00, type: 'income', category: 'transfer', account: 'PL 99 1111 2222 3333 4444 5555 3333' },
-            { id: 15, icon: '🎵', title: 'Spotify Premium', date: '15.11.2024, 00:00', amount: -29.99, type: 'expense', category: 'entertainment', account: 'SE 35 5000 0000 0549 1000 0003' }
-        ];
-        
-        // ==================== STAN APLIKACJI ====================
-        let currentUser = null;
-        let blikTimer = null;
-        let sessionStartTime = null;
-        
-        // ==================== ELEMENTY DOM ====================
-        const loginScreen = document.getElementById('loginScreen');
-        const bankApp = document.getElementById('bankApp');
-        const loginForm = document.getElementById('loginForm');
-        const loginError = document.getElementById('loginError');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userGreeting = document.getElementById('userGreeting');
-        const sidebarMenu = document.getElementById('sidebarMenu');
-        const toast = document.getElementById('toast');
-        
-        // ==================== FUNKCJE POMOCNICZE ====================
-        function formatMoney(amount) {
-            return new Intl.NumberFormat('pl-PL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount) + ' zł';
+      // ==================== DANE UŻYTKOWNIKÓW ====================
+      const USERS = {
+        'jan.kowalski@email.com': {
+          password: 'demo123',
+          firstName: 'Jan',
+          lastName: 'Kowalski',
+          phone: '+48 600 123 456',
+          address: 'ul. Bankowa 15/3\n00-001 Warszawa',
+          accountNumber: 'PL 12 1234 5678 9012 3456 7890 1234',
+          balance: 24567.89,
+          savings: 45000,
+          investments: 15780,
+        },
+        'anna.nowak@email.com': {
+          password: 'test456',
+          firstName: 'Anna',
+          lastName: 'Nowak',
+          phone: '+48 601 987 654',
+          address: 'ul. Złota 44/12\n00-120 Warszawa',
+          accountNumber: 'PL 98 7654 3210 9876 5432 1098 7654',
+          balance: 156234.5,
+          savings: 85000,
+          investments: 42500,
+        },
+      };
+
+      // ==================== DANE TRANSAKCJI ====================
+      const TRANSACTIONS = [
+        {
+          id: 1,
+          icon: '🛒',
+          title: 'Biedronka',
+          date: 'Dzisiaj, 14:32',
+          amount: -156.78,
+          type: 'expense',
+          category: 'shopping',
+          account: 'PL 22 1111 2222 3333 4444 5555 6666',
+        },
+        {
+          id: 2,
+          icon: '💼',
+          title: 'Wynagrodzenie - TechCorp',
+          date: 'Wczoraj, 08:00',
+          amount: 12450.0,
+          type: 'income',
+          category: 'salary',
+          account: 'PL 33 1111 2222 3333 4444 5555 7777',
+        },
+        {
+          id: 3,
+          icon: '⚡',
+          title: 'PGE Obrót',
+          date: '18.12.2024, 10:15',
+          amount: -342.5,
+          type: 'expense',
+          category: 'bills',
+          account: 'PL 44 1111 2222 3333 4444 5555 8888',
+        },
+        {
+          id: 4,
+          icon: '🏠',
+          title: 'Czynsz - Wspólnota Mieszkaniowa',
+          date: '15.12.2024, 09:00',
+          amount: -1850.0,
+          type: 'expense',
+          category: 'bills',
+          account: 'PL 55 1111 2222 3333 4444 5555 9999',
+        },
+        {
+          id: 5,
+          icon: '🎬',
+          title: 'Netflix',
+          date: '14.12.2024, 12:00',
+          amount: -49.0,
+          type: 'expense',
+          category: 'entertainment',
+          account: 'IE 12 BOFI 9000 0112 3456 78',
+        },
+        {
+          id: 6,
+          icon: '🚗',
+          title: 'Orlen - paliwo',
+          date: '13.12.2024, 18:45',
+          amount: -287.3,
+          type: 'expense',
+          category: 'transport',
+          account: 'Terminal POS',
+        },
+        {
+          id: 7,
+          icon: '📱',
+          title: 'Orange - abonament',
+          date: '10.12.2024, 00:00',
+          amount: -89.0,
+          type: 'expense',
+          category: 'bills',
+          account: 'PL 66 1111 2222 3333 4444 5555 0000',
+        },
+        {
+          id: 8,
+          icon: '🍕',
+          title: 'Pyszne.pl',
+          date: '08.12.2024, 20:15',
+          amount: -67.5,
+          type: 'expense',
+          category: 'food',
+          account: 'Płatność BLIK',
+        },
+        {
+          id: 9,
+          icon: '↔️',
+          title: 'Przelew do: Anna Nowak',
+          date: '05.12.2024, 14:30',
+          amount: -500.0,
+          type: 'transfer',
+          category: 'transfer',
+          account: 'PL 98 7654 3210 9876 5432 1098 7654',
+        },
+        {
+          id: 10,
+          icon: '💰',
+          title: 'Zwrot podatku - US Warszawa',
+          date: '01.12.2024, 10:00',
+          amount: 1234.0,
+          type: 'income',
+          category: 'refund',
+          account: 'PL 77 1111 2222 3333 4444 5555 1111',
+        },
+        {
+          id: 11,
+          icon: '🏋️',
+          title: 'Fitness Club - karnet',
+          date: '01.12.2024, 08:00',
+          amount: -149.0,
+          type: 'expense',
+          category: 'entertainment',
+          account: 'PL 88 1111 2222 3333 4444 5555 2222',
+        },
+        {
+          id: 12,
+          icon: '💊',
+          title: 'Apteka Dr.Max',
+          date: '28.11.2024, 16:20',
+          amount: -78.9,
+          type: 'expense',
+          category: 'health',
+          account: 'Terminal POS',
+        },
+        {
+          id: 13,
+          icon: '🎁',
+          title: 'Amazon.de - prezent',
+          date: '25.11.2024, 22:10',
+          amount: -234.99,
+          type: 'expense',
+          category: 'shopping',
+          account: 'DE 89 3704 0044 0532 0130 00',
+        },
+        {
+          id: 14,
+          icon: '↔️',
+          title: 'Przelew od: Rodzice',
+          date: '20.11.2024, 12:00',
+          amount: 2000.0,
+          type: 'income',
+          category: 'transfer',
+          account: 'PL 99 1111 2222 3333 4444 5555 3333',
+        },
+        {
+          id: 15,
+          icon: '🎵',
+          title: 'Spotify Premium',
+          date: '15.11.2024, 00:00',
+          amount: -29.99,
+          type: 'expense',
+          category: 'entertainment',
+          account: 'SE 35 5000 0000 0549 1000 0003',
+        },
+      ];
+
+      // ==================== STAN APLIKACJI ====================
+      let currentUser = null;
+      let blikTimer = null;
+      let sessionStartTime = null;
+
+      // ==================== ELEMENTY DOM ====================
+      const loginScreen = document.getElementById('loginScreen');
+      const bankApp = document.getElementById('bankApp');
+      const loginForm = document.getElementById('loginForm');
+      const loginError = document.getElementById('loginError');
+      const logoutBtn = document.getElementById('logoutBtn');
+      const userGreeting = document.getElementById('userGreeting');
+      const sidebarMenu = document.getElementById('sidebarMenu');
+      const toast = document.getElementById('toast');
+
+      // ==================== FUNKCJE POMOCNICZE ====================
+      function formatMoney(amount) {
+        return (
+          new Intl.NumberFormat('pl-PL', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(amount) + ' zł'
+        );
+      }
+
+      function showToast(message, type = 'default') {
+        toast.textContent = message;
+        toast.className = 'toast show ' + type;
+        setTimeout(() => toast.classList.remove('show'), 4000);
+      }
+
+      function closeAllModals() {
+        document.querySelectorAll('.modal-overlay').forEach((m) => m.classList.remove('show'));
+      }
+
+      // ==================== LOGOWANIE / WYLOGOWANIE ====================
+      loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+        const password = document.getElementById('loginPassword').value;
+
+        console.log('🔐 Próba logowania:', { email, passwordLength: password.length });
+
+        if (USERS[email] && USERS[email].password === password) {
+          currentUser = { email, ...USERS[email] };
+          sessionStartTime = new Date();
+
+          console.log('✅ Logowanie udane:', {
+            user: currentUser.firstName + ' ' + currentUser.lastName,
+            email: email,
+            sessionStart: sessionStartTime.toISOString(),
+          });
+
+          loginScreen.classList.add('hidden');
+          bankApp.classList.remove('hidden');
+          loginError.classList.remove('show');
+
+          initializeDashboard();
+          showToast(`Witaj, ${currentUser.firstName}!`, 'success');
+        } else {
+          console.warn('❌ Nieudane logowanie:', {
+            email,
+            reason: USERS[email] ? 'wrong_password' : 'user_not_found',
+          });
+          loginError.classList.add('show');
+          loginError.textContent = 'Nieprawidłowy login lub hasło. Spróbuj ponownie.';
         }
-        
-        function showToast(message, type = 'default') {
-            toast.textContent = message;
-            toast.className = 'toast show ' + type;
-            setTimeout(() => toast.classList.remove('show'), 4000);
-        }
-        
-        function closeAllModals() {
-            document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
-        }
-        
-        // ==================== LOGOWANIE / WYLOGOWANIE ====================
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-            const password = document.getElementById('loginPassword').value;
-            
-            console.log('🔐 Próba logowania:', { email, passwordLength: password.length });
-            
-            if (USERS[email] && USERS[email].password === password) {
-                currentUser = { email, ...USERS[email] };
-                sessionStartTime = new Date();
-                
-                console.log('✅ Logowanie udane:', { 
-                    user: currentUser.firstName + ' ' + currentUser.lastName,
-                    email: email,
-                    sessionStart: sessionStartTime.toISOString()
-                });
-                
-                loginScreen.classList.add('hidden');
-                bankApp.classList.remove('hidden');
-                loginError.classList.remove('show');
-                
-                initializeDashboard();
-                showToast(`Witaj, ${currentUser.firstName}!`, 'success');
-            } else {
-                console.warn('❌ Nieudane logowanie:', { email, reason: USERS[email] ? 'wrong_password' : 'user_not_found' });
-                loginError.classList.add('show');
-                loginError.textContent = 'Nieprawidłowy login lub hasło. Spróbuj ponownie.';
-            }
+      });
+
+      logoutBtn.addEventListener('click', () => {
+        const sessionDuration = Math.round((new Date() - sessionStartTime) / 1000);
+        console.log('👋 Wylogowanie:', {
+          user: currentUser.email,
+          sessionDuration: sessionDuration + 's',
+          timestamp: new Date().toISOString(),
         });
-        
-        logoutBtn.addEventListener('click', () => {
-            const sessionDuration = Math.round((new Date() - sessionStartTime) / 1000);
-            console.log('👋 Wylogowanie:', { 
-                user: currentUser.email, 
-                sessionDuration: sessionDuration + 's',
-                timestamp: new Date().toISOString()
-            });
-            
-            currentUser = null;
-            sessionStartTime = null;
-            bankApp.classList.add('hidden');
-            loginScreen.classList.remove('hidden');
-            loginForm.reset();
-            
-            if (blikTimer) clearInterval(blikTimer);
-            showToast('Wylogowano pomyślnie', 'success');
+
+        currentUser = null;
+        sessionStartTime = null;
+        bankApp.classList.add('hidden');
+        loginScreen.classList.remove('hidden');
+        loginForm.reset();
+
+        if (blikTimer) clearInterval(blikTimer);
+        showToast('Wylogowano pomyślnie', 'success');
+      });
+
+      // ==================== INICJALIZACJA DASHBOARDU ====================
+      function initializeDashboard() {
+        // Aktualizacja nagłówka
+        userGreeting.textContent = `Witaj, ${currentUser.firstName} ${currentUser.lastName}`;
+        document.getElementById('accountNumber').textContent = currentUser.accountNumber;
+        document.getElementById('accountBalance').textContent = formatMoney(currentUser.balance);
+        document.getElementById('savingsAmount').textContent = formatMoney(currentUser.savings);
+        document.getElementById('investmentsAmount').textContent = formatMoney(
+          currentUser.investments,
+        );
+
+        // Aktualizacja nazw na kartach
+        const holderName = (currentUser.firstName + ' ' + currentUser.lastName).toUpperCase();
+        document.getElementById('cardHolder1').textContent = holderName;
+        document.getElementById('cardHolder2').textContent = holderName;
+
+        // Ustawienia
+        document.getElementById('settingsFirstName').value = currentUser.firstName;
+        document.getElementById('settingsLastName').value = currentUser.lastName;
+        document.getElementById('settingsEmail').value = currentUser.email;
+        document.getElementById('settingsPhone').value = currentUser.phone;
+        document.getElementById('settingsAddress').value = currentUser.address;
+
+        // Renderowanie transakcji
+        renderTransactions(TRANSACTIONS.slice(0, 5), 'recentTransactions');
+        renderTransactions(TRANSACTIONS, 'allTransactions');
+
+        console.log('📊 Dashboard załadowany:', {
+          balance: currentUser.balance,
+          savings: currentUser.savings,
+          investments: currentUser.investments,
+          transactionsCount: TRANSACTIONS.length,
         });
-        
-        // ==================== INICJALIZACJA DASHBOARDU ====================
-        function initializeDashboard() {
-            // Aktualizacja nagłówka
-            userGreeting.textContent = `Witaj, ${currentUser.firstName} ${currentUser.lastName}`;
-            document.getElementById('accountNumber').textContent = currentUser.accountNumber;
-            document.getElementById('accountBalance').textContent = formatMoney(currentUser.balance);
-            document.getElementById('savingsAmount').textContent = formatMoney(currentUser.savings);
-            document.getElementById('investmentsAmount').textContent = formatMoney(currentUser.investments);
-            
-            // Aktualizacja nazw na kartach
-            const holderName = (currentUser.firstName + ' ' + currentUser.lastName).toUpperCase();
-            document.getElementById('cardHolder1').textContent = holderName;
-            document.getElementById('cardHolder2').textContent = holderName;
-            
-            // Ustawienia
-            document.getElementById('settingsFirstName').value = currentUser.firstName;
-            document.getElementById('settingsLastName').value = currentUser.lastName;
-            document.getElementById('settingsEmail').value = currentUser.email;
-            document.getElementById('settingsPhone').value = currentUser.phone;
-            document.getElementById('settingsAddress').value = currentUser.address;
-            
-            // Renderowanie transakcji
-            renderTransactions(TRANSACTIONS.slice(0, 5), 'recentTransactions');
-            renderTransactions(TRANSACTIONS, 'allTransactions');
-            
-            console.log('📊 Dashboard załadowany:', {
-                balance: currentUser.balance,
-                savings: currentUser.savings,
-                investments: currentUser.investments,
-                transactionsCount: TRANSACTIONS.length
-            });
-        }
-        
-        // ==================== RENDEROWANIE TRANSAKCJI ====================
-        function renderTransactions(transactions, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = transactions.map(t => `
+      }
+
+      // ==================== RENDEROWANIE TRANSAKCJI ====================
+      function renderTransactions(transactions, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = transactions
+          .map(
+            (t) => `
                 <li class="transaction-item" data-track="transaction-click-${t.id}" data-transaction-id="${t.id}">
                     <div class="transaction-info">
                         <div class="transaction-icon">${t.icon}</div>
@@ -1741,172 +2163,179 @@
                         <span class="transaction-category">${getCategoryLabel(t.category)}</span>
                     </div>
                 </li>
-            `).join('');
+            `,
+          )
+          .join('');
+      }
+
+      function getCategoryLabel(category) {
+        const labels = {
+          shopping: 'Zakupy',
+          salary: 'Wynagrodzenie',
+          bills: 'Rachunki',
+          entertainment: 'Rozrywka',
+          transport: 'Transport',
+          food: 'Jedzenie',
+          transfer: 'Przelew',
+          refund: 'Zwrot',
+          health: 'Zdrowie',
+        };
+        return labels[category] || category;
+      }
+
+      // ==================== NAWIGACJA ====================
+      sidebarMenu.addEventListener('click', (e) => {
+        const link = e.target.closest('a[data-section]');
+        if (!link) return;
+
+        const section = link.dataset.section;
+        console.log('📍 Nawigacja:', { section, timestamp: new Date().toISOString() });
+
+        // Aktualizacja aktywnego linku
+        sidebarMenu.querySelectorAll('a').forEach((a) => a.classList.remove('active'));
+        link.classList.add('active');
+
+        // Pokazanie odpowiedniej sekcji
+        document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
+        document.getElementById(`section-${section}`).classList.add('active');
+      });
+
+      // Quick actions z dashboardu
+      document.addEventListener('click', (e) => {
+        const action = e.target.closest('[data-action]');
+        if (!action) return;
+
+        const actionType = action.dataset.action;
+        console.log('⚡ Akcja szybka:', { action: actionType });
+
+        switch (actionType) {
+          case 'open-transfer':
+            navigateTo('transfers');
+            break;
+          case 'go-history':
+            navigateTo('history');
+            break;
+          case 'go-blik':
+            navigateTo('blik');
+            break;
+          case 'go-stats':
+            navigateTo('stats');
+            break;
+          case 'block-card':
+            openBlockCardModal(action.dataset.card);
+            break;
+          case 'show-limits':
+            openLimitsModal(action.dataset.card);
+            break;
+          case 'change-pin':
+            openPinModal(action.dataset.card);
+            break;
         }
-        
-        function getCategoryLabel(category) {
-            const labels = {
-                shopping: 'Zakupy',
-                salary: 'Wynagrodzenie',
-                bills: 'Rachunki',
-                entertainment: 'Rozrywka',
-                transport: 'Transport',
-                food: 'Jedzenie',
-                transfer: 'Przelew',
-                refund: 'Zwrot',
-                health: 'Zdrowie'
-            };
-            return labels[category] || category;
+      });
+
+      function navigateTo(section) {
+        const link = sidebarMenu.querySelector(`[data-section="${section}"]`);
+        if (link) link.click();
+      }
+
+      // ==================== WYSZUKIWANIE HISTORII ====================
+      const historySearch = document.getElementById('historySearch');
+      const historySearchBtn = document.getElementById('historySearchBtn');
+      const filterTags = document.getElementById('filterTags');
+      const noResults = document.getElementById('noResults');
+
+      let currentFilter = 'all';
+      let searchQuery = '';
+
+      historySearchBtn.addEventListener('click', performSearch);
+      historySearch.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performSearch();
+      });
+
+      historySearch.addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        console.log('🔍 Wpisywanie w wyszukiwarce:', {
+          query: searchQuery,
+          length: searchQuery.length,
+        });
+      });
+
+      filterTags.addEventListener('click', (e) => {
+        const tag = e.target.closest('.filter-tag');
+        if (!tag) return;
+
+        filterTags.querySelectorAll('.filter-tag').forEach((t) => t.classList.remove('active'));
+        tag.classList.add('active');
+        currentFilter = tag.dataset.filter;
+
+        console.log('🏷️ Zmiana filtra:', { filter: currentFilter });
+        performSearch();
+      });
+
+      function performSearch() {
+        const query = historySearch.value.toLowerCase().trim();
+        console.log('🔎 Wyszukiwanie:', { query, filter: currentFilter });
+
+        let results = TRANSACTIONS.filter((t) => {
+          // Filtr kategorii
+          if (currentFilter !== 'all') {
+            if (currentFilter === 'income' && t.type !== 'income') return false;
+            if (currentFilter === 'expense' && t.type !== 'expense') return false;
+            if (currentFilter === 'transfer' && t.category !== 'transfer') return false;
+            if (currentFilter === 'shopping' && t.category !== 'shopping') return false;
+            if (currentFilter === 'bills' && t.category !== 'bills') return false;
+            if (currentFilter === 'entertainment' && t.category !== 'entertainment') return false;
+          }
+
+          // Wyszukiwanie tekstowe
+          if (query) {
+            return (
+              t.title.toLowerCase().includes(query) ||
+              t.date.toLowerCase().includes(query) ||
+              t.category.toLowerCase().includes(query)
+            );
+          }
+
+          return true;
+        });
+
+        console.log('📋 Wyniki wyszukiwania:', {
+          query,
+          filter: currentFilter,
+          resultsCount: results.length,
+          results: results.map((r) => r.title),
+        });
+
+        if (results.length === 0) {
+          document.getElementById('allTransactions').innerHTML = '';
+          noResults.classList.remove('hidden');
+        } else {
+          noResults.classList.add('hidden');
+          renderTransactions(results, 'allTransactions');
         }
-        
-        // ==================== NAWIGACJA ====================
-        sidebarMenu.addEventListener('click', (e) => {
-            const link = e.target.closest('a[data-section]');
-            if (!link) return;
-            
-            const section = link.dataset.section;
-            console.log('📍 Nawigacja:', { section, timestamp: new Date().toISOString() });
-            
-            // Aktualizacja aktywnego linku
-            sidebarMenu.querySelectorAll('a').forEach(a => a.classList.remove('active'));
-            link.classList.add('active');
-            
-            // Pokazanie odpowiedniej sekcji
-            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-            document.getElementById(`section-${section}`).classList.add('active');
+      }
+
+      // ==================== SZCZEGÓŁY TRANSAKCJI ====================
+      document.addEventListener('click', (e) => {
+        const item = e.target.closest('.transaction-item');
+        if (!item) return;
+
+        const transactionId = parseInt(item.dataset.transactionId);
+        const transaction = TRANSACTIONS.find((t) => t.id === transactionId);
+
+        if (!transaction) return;
+
+        console.log('💳 Otwarto szczegóły transakcji:', {
+          id: transaction.id,
+          title: transaction.title,
+          amount: transaction.amount,
+          category: transaction.category,
         });
-        
-        // Quick actions z dashboardu
-        document.addEventListener('click', (e) => {
-            const action = e.target.closest('[data-action]');
-            if (!action) return;
-            
-            const actionType = action.dataset.action;
-            console.log('⚡ Akcja szybka:', { action: actionType });
-            
-            switch(actionType) {
-                case 'open-transfer':
-                    navigateTo('transfers');
-                    break;
-                case 'go-history':
-                    navigateTo('history');
-                    break;
-                case 'go-blik':
-                    navigateTo('blik');
-                    break;
-                case 'go-stats':
-                    navigateTo('stats');
-                    break;
-                case 'block-card':
-                    openBlockCardModal(action.dataset.card);
-                    break;
-                case 'show-limits':
-                    openLimitsModal(action.dataset.card);
-                    break;
-                case 'change-pin':
-                    openPinModal(action.dataset.card);
-                    break;
-            }
-        });
-        
-        function navigateTo(section) {
-            const link = sidebarMenu.querySelector(`[data-section="${section}"]`);
-            if (link) link.click();
-        }
-        
-        // ==================== WYSZUKIWANIE HISTORII ====================
-        const historySearch = document.getElementById('historySearch');
-        const historySearchBtn = document.getElementById('historySearchBtn');
-        const filterTags = document.getElementById('filterTags');
-        const noResults = document.getElementById('noResults');
-        
-        let currentFilter = 'all';
-        let searchQuery = '';
-        
-        historySearchBtn.addEventListener('click', performSearch);
-        historySearch.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') performSearch();
-        });
-        
-        historySearch.addEventListener('input', (e) => {
-            searchQuery = e.target.value;
-            console.log('🔍 Wpisywanie w wyszukiwarce:', { query: searchQuery, length: searchQuery.length });
-        });
-        
-        filterTags.addEventListener('click', (e) => {
-            const tag = e.target.closest('.filter-tag');
-            if (!tag) return;
-            
-            filterTags.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
-            tag.classList.add('active');
-            currentFilter = tag.dataset.filter;
-            
-            console.log('🏷️ Zmiana filtra:', { filter: currentFilter });
-            performSearch();
-        });
-        
-        function performSearch() {
-            const query = historySearch.value.toLowerCase().trim();
-            console.log('🔎 Wyszukiwanie:', { query, filter: currentFilter });
-            
-            let results = TRANSACTIONS.filter(t => {
-                // Filtr kategorii
-                if (currentFilter !== 'all') {
-                    if (currentFilter === 'income' && t.type !== 'income') return false;
-                    if (currentFilter === 'expense' && t.type !== 'expense') return false;
-                    if (currentFilter === 'transfer' && t.category !== 'transfer') return false;
-                    if (currentFilter === 'shopping' && t.category !== 'shopping') return false;
-                    if (currentFilter === 'bills' && t.category !== 'bills') return false;
-                    if (currentFilter === 'entertainment' && t.category !== 'entertainment') return false;
-                }
-                
-                // Wyszukiwanie tekstowe
-                if (query) {
-                    return t.title.toLowerCase().includes(query) || 
-                           t.date.toLowerCase().includes(query) ||
-                           t.category.toLowerCase().includes(query);
-                }
-                
-                return true;
-            });
-            
-            console.log('📋 Wyniki wyszukiwania:', { 
-                query, 
-                filter: currentFilter, 
-                resultsCount: results.length,
-                results: results.map(r => r.title)
-            });
-            
-            if (results.length === 0) {
-                document.getElementById('allTransactions').innerHTML = '';
-                noResults.classList.remove('hidden');
-            } else {
-                noResults.classList.add('hidden');
-                renderTransactions(results, 'allTransactions');
-            }
-        }
-        
-        // ==================== SZCZEGÓŁY TRANSAKCJI ====================
-        document.addEventListener('click', (e) => {
-            const item = e.target.closest('.transaction-item');
-            if (!item) return;
-            
-            const transactionId = parseInt(item.dataset.transactionId);
-            const transaction = TRANSACTIONS.find(t => t.id === transactionId);
-            
-            if (!transaction) return;
-            
-            console.log('💳 Otwarto szczegóły transakcji:', {
-                id: transaction.id,
-                title: transaction.title,
-                amount: transaction.amount,
-                category: transaction.category
-            });
-            
-            const modal = document.getElementById('transactionModal');
-            const details = document.getElementById('transactionDetails');
-            
-            details.innerHTML = `
+
+        const modal = document.getElementById('transactionModal');
+        const details = document.getElementById('transactionDetails');
+
+        details.innerHTML = `
                 <div class="transaction-detail-row">
                     <span class="transaction-detail-label">Tytuł</span>
                     <span class="transaction-detail-value">${transaction.title}</span>
@@ -1934,298 +2363,300 @@
                     <span class="transaction-detail-value">TRX-2024-${String(transaction.id).padStart(6, '0')}</span>
                 </div>
             `;
-            
-            modal.classList.add('show');
-        });
-        
-        document.getElementById('closeTransactionModal').addEventListener('click', () => {
-            document.getElementById('transactionModal').classList.remove('show');
-        });
-        
-        // ==================== PRZELEWY ====================
-        const transferForm = document.getElementById('transferForm');
-        const transferType = document.getElementById('transferType');
-        
-        // Wybór typu przelewu z kart
-        document.querySelectorAll('[data-transfer-type]').forEach(card => {
-            card.addEventListener('click', () => {
-                const type = card.dataset.transferType;
-                transferType.value = type;
-                updateTransferForm();
-                console.log('💸 Wybrano typ przelewu:', { type });
-            });
-        });
-        
-        transferType.addEventListener('change', updateTransferForm);
-        
-        function updateTransferForm() {
-            const type = transferType.value;
-            document.getElementById('scheduledDateGroup').classList.toggle('hidden', type !== 'scheduled');
-            document.getElementById('recurringGroup').classList.toggle('hidden', type !== 'recurring');
-        }
-        
-        transferForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            const transferData = {
-                type: transferType.value,
-                recipient: document.getElementById('recipientName').value,
-                recipientAddress: document.getElementById('recipientAddress').value,
-                account: document.getElementById('recipientAccount').value,
-                amount: parseFloat(document.getElementById('transferAmount').value),
-                currency: document.getElementById('transferCurrency').value,
-                title: document.getElementById('transferTitle').value,
-                scheduledDate: document.getElementById('scheduledDate').value,
-                frequency: document.getElementById('recurringFrequency').value
-            };
-            
-            console.log('💸 Wykonano przelew:', transferData);
-            console.log('✅ Przelew zatwierdzony:', {
-                ...transferData,
-                timestamp: new Date().toISOString(),
-                fromAccount: currentUser.accountNumber
-            });
-            
-            // Symulacja aktualizacji salda
-            currentUser.balance -= transferData.amount;
-            document.getElementById('accountBalance').textContent = formatMoney(currentUser.balance);
-            
-            // Dodanie do historii
-            TRANSACTIONS.unshift({
-                id: TRANSACTIONS.length + 1,
-                icon: '↔️',
-                title: `Przelew do: ${transferData.recipient}`,
-                date: 'Przed chwilą',
-                amount: -transferData.amount,
-                type: 'transfer',
-                category: 'transfer',
-                account: transferData.account
-            });
-            
-            transferForm.reset();
-            showToast('✅ Przelew wysłany pomyślnie!', 'success');
-        });
-        
-        document.getElementById('clearTransferForm').addEventListener('click', () => {
-            transferForm.reset();
-            console.log('🧹 Formularz przelewu wyczyszczony');
-        });
-        
-        // ==================== BLIK ====================
-        const generateBlikBtn = document.getElementById('generateBlikBtn');
-        const blikCodeEl = document.getElementById('blikCode');
-        const blikTimerEl = document.getElementById('blikTimer');
-        
-        generateBlikBtn.addEventListener('click', generateBlik);
-        
-        function generateBlik() {
-            const code = String(Math.floor(100000 + Math.random() * 900000));
-            const formattedCode = code.substring(0, 3) + ' ' + code.substring(3);
-            
-            blikCodeEl.textContent = formattedCode;
-            console.log('📱 Wygenerowano kod BLIK:', { code, timestamp: new Date().toISOString() });
-            
-            let timeLeft = 120;
-            if (blikTimer) clearInterval(blikTimer);
-            
-            blikTimer = setInterval(() => {
-                timeLeft--;
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                blikTimerEl.innerHTML = `Kod wygaśnie za: <span>${minutes}:${String(seconds).padStart(2, '0')}</span>`;
-                
-                if (timeLeft <= 0) {
-                    clearInterval(blikTimer);
-                    blikCodeEl.textContent = '--- ---';
-                    blikTimerEl.textContent = 'Kod wygasł. Wygeneruj nowy.';
-                    console.log('⏰ Kod BLIK wygasł');
-                }
-            }, 1000);
-            
-            showToast('📱 Kod BLIK wygenerowany', 'success');
-        }
-        
-        // BLIK na telefon
-        document.getElementById('sendBlikPhoneBtn').addEventListener('click', () => {
-            const phone = document.getElementById('blikPhone').value;
-            const amount = document.getElementById('blikAmount').value;
-            
-            if (!phone || !amount) {
-                showToast('Wypełnij wszystkie pola', 'error');
-                return;
-            }
-            
-            console.log('📲 BLIK na telefon:', { phone, amount, timestamp: new Date().toISOString() });
-            showToast(`✅ Wysłano ${amount} zł na numer ${phone}`, 'success');
-            
-            document.getElementById('blikPhone').value = '';
-            document.getElementById('blikAmount').value = '';
-        });
-        
-        // Wypłata BLIK z bankomatu
-        document.querySelectorAll('[data-atm-amount]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const amount = btn.dataset.atmAmount;
-                console.log('🏧 Wypłata BLIK:', { amount, timestamp: new Date().toISOString() });
-                generateBlik();
-                showToast(`Użyj kodu BLIK do wypłaty ${amount} zł z bankomatu`, 'success');
-            });
-        });
-        
-        // ==================== ZARZĄDZANIE KARTAMI ====================
-        let selectedCard = null;
-        
-        function openBlockCardModal(card) {
-            selectedCard = card;
-            document.getElementById('blockCardName').textContent = card === 'visa' ? 'VISA **** 4521' : 'Mastercard **** 7890';
-            document.getElementById('cardBlockModal').classList.add('show');
-            console.log('🔒 Otwarto modal blokady karty:', { card });
-        }
-        
-        function openLimitsModal(card) {
-            selectedCard = card;
-            document.getElementById('cardLimitsModal').classList.add('show');
-            console.log('📊 Otwarto modal limitów:', { card });
-        }
-        
-        function openPinModal(card) {
-            selectedCard = card;
-            document.getElementById('changePinModal').classList.add('show');
-            console.log('🔑 Otwarto modal zmiany PIN:', { card });
-        }
-        
-        document.getElementById('cancelBlockCard').addEventListener('click', () => closeAllModals());
-        document.getElementById('cancelLimits').addEventListener('click', () => closeAllModals());
-        document.getElementById('cancelPin').addEventListener('click', () => closeAllModals());
-        
-        document.getElementById('confirmBlockCard').addEventListener('click', () => {
-            const reason = document.getElementById('blockReason').value;
-            if (!reason) {
-                showToast('Wybierz powód blokady', 'error');
-                return;
-            }
-            
-            console.log('🔒 Zablokowano kartę:', { 
-                card: selectedCard, 
-                reason, 
-                timestamp: new Date().toISOString() 
-            });
-            
-            closeAllModals();
-            showToast('🔒 Karta została zablokowana', 'success');
-        });
-        
-        document.getElementById('limitsForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const limits = {
-                daily: document.getElementById('limitDaily').value,
-                atm: document.getElementById('limitAtm').value,
-                single: document.getElementById('limitSingle').value,
-                online: document.getElementById('limitOnline').value
-            };
-            
-            console.log('📊 Zapisano limity karty:', { card: selectedCard, limits });
-            closeAllModals();
-            showToast('✅ Limity zostały zaktualizowane', 'success');
-        });
-        
-        document.getElementById('pinForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const currentPin = document.getElementById('currentPin').value;
-            const newPin = document.getElementById('newPin').value;
-            const confirmPin = document.getElementById('confirmPin').value;
-            
-            if (newPin !== confirmPin) {
-                showToast('Nowe PINy nie są identyczne', 'error');
-                return;
-            }
-            
-            console.log('🔑 Zmieniono PIN karty:', { 
-                card: selectedCard, 
-                timestamp: new Date().toISOString() 
-            });
-            
-            closeAllModals();
-            document.getElementById('pinForm').reset();
-            showToast('✅ PIN został zmieniony', 'success');
-        });
-        
-        // ==================== USTAWIENIA ====================
-        document.getElementById('settingsForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const settings = {
-                firstName: document.getElementById('settingsFirstName').value,
-                lastName: document.getElementById('settingsLastName').value,
-                email: document.getElementById('settingsEmail').value,
-                phone: document.getElementById('settingsPhone').value,
-                address: document.getElementById('settingsAddress').value
-            };
-            
-            console.log('⚙️ Zapisano ustawienia:', settings);
-            
-            // Aktualizacja danych użytkownika
-            currentUser.firstName = settings.firstName;
-            currentUser.lastName = settings.lastName;
-            userGreeting.textContent = `Witaj, ${settings.firstName} ${settings.lastName}`;
-            
-            showToast('✅ Ustawienia zostały zapisane', 'success');
-        });
-        
-        document.getElementById('passwordForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const currentPassword = document.getElementById('currentPassword').value;
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (newPassword !== confirmPassword) {
-                showToast('Nowe hasła nie są identyczne', 'error');
-                return;
-            }
-            
-            if (currentPassword !== USERS[currentUser.email].password) {
-                showToast('Aktualne hasło jest nieprawidłowe', 'error');
-                return;
-            }
-            
-            console.log('🔐 Zmieniono hasło:', { 
-                email: currentUser.email, 
-                timestamp: new Date().toISOString() 
-            });
-            
-            USERS[currentUser.email].password = newPassword;
-            document.getElementById('passwordForm').reset();
-            showToast('✅ Hasło zostało zmienione', 'success');
-        });
-        
-        // Powiadomienia
-        document.querySelectorAll('[data-track^="toggle-notify"]').forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                const setting = e.target.id;
-                const value = e.target.checked;
-                console.log('🔔 Zmiana powiadomień:', { setting, enabled: value });
-            });
-        });
-        
-        // ==================== ZAMYKANIE MODALI ====================
-        document.querySelectorAll('.modal-overlay').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeAllModals();
-            });
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeAllModals();
-        });
-        
-        // ==================== LOGI STARTOWE ====================
-        console.log('🏦 SecureBank v5.0 - System bankowy załadowany');
-        console.log('🔧 Tryb testowy - wszystkie dane są symulowane');
-        console.log('📊 Tracker aktywny - monitorowanie zdarzeń');
-        
-        setTimeout(() => {
-            console.log('💱 Kursy walut:', { EUR: 4.32, USD: 3.98, GBP: 5.04 });
-        }, 2000);
-    </script>
-</body>
-</html>
 
+        modal.classList.add('show');
+      });
+
+      document.getElementById('closeTransactionModal').addEventListener('click', () => {
+        document.getElementById('transactionModal').classList.remove('show');
+      });
+
+      // ==================== PRZELEWY ====================
+      const transferForm = document.getElementById('transferForm');
+      const transferType = document.getElementById('transferType');
+
+      // Wybór typu przelewu z kart
+      document.querySelectorAll('[data-transfer-type]').forEach((card) => {
+        card.addEventListener('click', () => {
+          const type = card.dataset.transferType;
+          transferType.value = type;
+          updateTransferForm();
+          console.log('💸 Wybrano typ przelewu:', { type });
+        });
+      });
+
+      transferType.addEventListener('change', updateTransferForm);
+
+      function updateTransferForm() {
+        const type = transferType.value;
+        document
+          .getElementById('scheduledDateGroup')
+          .classList.toggle('hidden', type !== 'scheduled');
+        document.getElementById('recurringGroup').classList.toggle('hidden', type !== 'recurring');
+      }
+
+      transferForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const transferData = {
+          type: transferType.value,
+          recipient: document.getElementById('recipientName').value,
+          recipientAddress: document.getElementById('recipientAddress').value,
+          account: document.getElementById('recipientAccount').value,
+          amount: parseFloat(document.getElementById('transferAmount').value),
+          currency: document.getElementById('transferCurrency').value,
+          title: document.getElementById('transferTitle').value,
+          scheduledDate: document.getElementById('scheduledDate').value,
+          frequency: document.getElementById('recurringFrequency').value,
+        };
+
+        console.log('💸 Wykonano przelew:', transferData);
+        console.log('✅ Przelew zatwierdzony:', {
+          ...transferData,
+          timestamp: new Date().toISOString(),
+          fromAccount: currentUser.accountNumber,
+        });
+
+        // Symulacja aktualizacji salda
+        currentUser.balance -= transferData.amount;
+        document.getElementById('accountBalance').textContent = formatMoney(currentUser.balance);
+
+        // Dodanie do historii
+        TRANSACTIONS.unshift({
+          id: TRANSACTIONS.length + 1,
+          icon: '↔️',
+          title: `Przelew do: ${transferData.recipient}`,
+          date: 'Przed chwilą',
+          amount: -transferData.amount,
+          type: 'transfer',
+          category: 'transfer',
+          account: transferData.account,
+        });
+
+        transferForm.reset();
+        showToast('✅ Przelew wysłany pomyślnie!', 'success');
+      });
+
+      document.getElementById('clearTransferForm').addEventListener('click', () => {
+        transferForm.reset();
+        console.log('🧹 Formularz przelewu wyczyszczony');
+      });
+
+      // ==================== BLIK ====================
+      const generateBlikBtn = document.getElementById('generateBlikBtn');
+      const blikCodeEl = document.getElementById('blikCode');
+      const blikTimerEl = document.getElementById('blikTimer');
+
+      generateBlikBtn.addEventListener('click', generateBlik);
+
+      function generateBlik() {
+        const code = String(Math.floor(100000 + Math.random() * 900000));
+        const formattedCode = code.substring(0, 3) + ' ' + code.substring(3);
+
+        blikCodeEl.textContent = formattedCode;
+        console.log('📱 Wygenerowano kod BLIK:', { code, timestamp: new Date().toISOString() });
+
+        let timeLeft = 120;
+        if (blikTimer) clearInterval(blikTimer);
+
+        blikTimer = setInterval(() => {
+          timeLeft--;
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          blikTimerEl.innerHTML = `Kod wygaśnie za: <span>${minutes}:${String(seconds).padStart(2, '0')}</span>`;
+
+          if (timeLeft <= 0) {
+            clearInterval(blikTimer);
+            blikCodeEl.textContent = '--- ---';
+            blikTimerEl.textContent = 'Kod wygasł. Wygeneruj nowy.';
+            console.log('⏰ Kod BLIK wygasł');
+          }
+        }, 1000);
+
+        showToast('📱 Kod BLIK wygenerowany', 'success');
+      }
+
+      // BLIK na telefon
+      document.getElementById('sendBlikPhoneBtn').addEventListener('click', () => {
+        const phone = document.getElementById('blikPhone').value;
+        const amount = document.getElementById('blikAmount').value;
+
+        if (!phone || !amount) {
+          showToast('Wypełnij wszystkie pola', 'error');
+          return;
+        }
+
+        console.log('📲 BLIK na telefon:', { phone, amount, timestamp: new Date().toISOString() });
+        showToast(`✅ Wysłano ${amount} zł na numer ${phone}`, 'success');
+
+        document.getElementById('blikPhone').value = '';
+        document.getElementById('blikAmount').value = '';
+      });
+
+      // Wypłata BLIK z bankomatu
+      document.querySelectorAll('[data-atm-amount]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const amount = btn.dataset.atmAmount;
+          console.log('🏧 Wypłata BLIK:', { amount, timestamp: new Date().toISOString() });
+          generateBlik();
+          showToast(`Użyj kodu BLIK do wypłaty ${amount} zł z bankomatu`, 'success');
+        });
+      });
+
+      // ==================== ZARZĄDZANIE KARTAMI ====================
+      let selectedCard = null;
+
+      function openBlockCardModal(card) {
+        selectedCard = card;
+        document.getElementById('blockCardName').textContent =
+          card === 'visa' ? 'VISA **** 4521' : 'Mastercard **** 7890';
+        document.getElementById('cardBlockModal').classList.add('show');
+        console.log('🔒 Otwarto modal blokady karty:', { card });
+      }
+
+      function openLimitsModal(card) {
+        selectedCard = card;
+        document.getElementById('cardLimitsModal').classList.add('show');
+        console.log('📊 Otwarto modal limitów:', { card });
+      }
+
+      function openPinModal(card) {
+        selectedCard = card;
+        document.getElementById('changePinModal').classList.add('show');
+        console.log('🔑 Otwarto modal zmiany PIN:', { card });
+      }
+
+      document.getElementById('cancelBlockCard').addEventListener('click', () => closeAllModals());
+      document.getElementById('cancelLimits').addEventListener('click', () => closeAllModals());
+      document.getElementById('cancelPin').addEventListener('click', () => closeAllModals());
+
+      document.getElementById('confirmBlockCard').addEventListener('click', () => {
+        const reason = document.getElementById('blockReason').value;
+        if (!reason) {
+          showToast('Wybierz powód blokady', 'error');
+          return;
+        }
+
+        console.log('🔒 Zablokowano kartę:', {
+          card: selectedCard,
+          reason,
+          timestamp: new Date().toISOString(),
+        });
+
+        closeAllModals();
+        showToast('🔒 Karta została zablokowana', 'success');
+      });
+
+      document.getElementById('limitsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const limits = {
+          daily: document.getElementById('limitDaily').value,
+          atm: document.getElementById('limitAtm').value,
+          single: document.getElementById('limitSingle').value,
+          online: document.getElementById('limitOnline').value,
+        };
+
+        console.log('📊 Zapisano limity karty:', { card: selectedCard, limits });
+        closeAllModals();
+        showToast('✅ Limity zostały zaktualizowane', 'success');
+      });
+
+      document.getElementById('pinForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const currentPin = document.getElementById('currentPin').value;
+        const newPin = document.getElementById('newPin').value;
+        const confirmPin = document.getElementById('confirmPin').value;
+
+        if (newPin !== confirmPin) {
+          showToast('Nowe PINy nie są identyczne', 'error');
+          return;
+        }
+
+        console.log('🔑 Zmieniono PIN karty:', {
+          card: selectedCard,
+          timestamp: new Date().toISOString(),
+        });
+
+        closeAllModals();
+        document.getElementById('pinForm').reset();
+        showToast('✅ PIN został zmieniony', 'success');
+      });
+
+      // ==================== USTAWIENIA ====================
+      document.getElementById('settingsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const settings = {
+          firstName: document.getElementById('settingsFirstName').value,
+          lastName: document.getElementById('settingsLastName').value,
+          email: document.getElementById('settingsEmail').value,
+          phone: document.getElementById('settingsPhone').value,
+          address: document.getElementById('settingsAddress').value,
+        };
+
+        console.log('⚙️ Zapisano ustawienia:', settings);
+
+        // Aktualizacja danych użytkownika
+        currentUser.firstName = settings.firstName;
+        currentUser.lastName = settings.lastName;
+        userGreeting.textContent = `Witaj, ${settings.firstName} ${settings.lastName}`;
+
+        showToast('✅ Ustawienia zostały zapisane', 'success');
+      });
+
+      document.getElementById('passwordForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (newPassword !== confirmPassword) {
+          showToast('Nowe hasła nie są identyczne', 'error');
+          return;
+        }
+
+        if (currentPassword !== USERS[currentUser.email].password) {
+          showToast('Aktualne hasło jest nieprawidłowe', 'error');
+          return;
+        }
+
+        console.log('🔐 Zmieniono hasło:', {
+          email: currentUser.email,
+          timestamp: new Date().toISOString(),
+        });
+
+        USERS[currentUser.email].password = newPassword;
+        document.getElementById('passwordForm').reset();
+        showToast('✅ Hasło zostało zmienione', 'success');
+      });
+
+      // Powiadomienia
+      document.querySelectorAll('[data-track^="toggle-notify"]').forEach((checkbox) => {
+        checkbox.addEventListener('change', (e) => {
+          const setting = e.target.id;
+          const value = e.target.checked;
+          console.log('🔔 Zmiana powiadomień:', { setting, enabled: value });
+        });
+      });
+
+      // ==================== ZAMYKANIE MODALI ====================
+      document.querySelectorAll('.modal-overlay').forEach((modal) => {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeAllModals();
+        });
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeAllModals();
+      });
+
+      // ==================== LOGI STARTOWE ====================
+      console.log('🏦 SecureBank v5.0 - System bankowy załadowany');
+      console.log('🔧 Tryb testowy - wszystkie dane są symulowane');
+      console.log('📊 Tracker aktywny - monitorowanie zdarzeń');
+
+      setTimeout(() => {
+        console.log('💱 Kursy walut:', { EUR: 4.32, USD: 3.98, GBP: 5.04 });
+      }, 2000);
+    </script>
+  </body>
+</html>
