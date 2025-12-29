@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 // Funkcja generująca UUID
 function generateLogId(): string {
-    return 'ping-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 9);
+  return 'ping-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 9);
 }
 
 /**
@@ -15,23 +15,24 @@ function generateLogId(): string {
  *   - site_id: ID strony (opcjonalnie)
  */
 export async function GET(request: NextRequest) {
-    const startTime = Date.now();
-    const origin = request.headers.get('origin') || request.headers.get('referer') || null;
-    const userAgent = request.headers.get('user-agent') || null;
-    
-    // Pobierz IP
-    let ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
-    if (ip.includes(',')) ip = ip.split(',')[0].trim();
-    if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
+  const startTime = Date.now();
+  const origin = request.headers.get('origin') || request.headers.get('referer') || null;
+  const userAgent = request.headers.get('user-agent') || null;
 
-    const { searchParams } = new URL(request.url);
-    const siteId = searchParams.get('site_id') || 'ping-test';
+  // Pobierz IP
+  let ip =
+    request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+  if (ip.includes(',')) ip = ip.split(',')[0].trim();
+  if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
 
-    try {
-        const db = getDb();
-        
-        // Zapisz log pinga
-        const insertLog = db.prepare(`
+  const { searchParams } = new URL(request.url);
+  const siteId = searchParams.get('site_id') || 'ping-test';
+
+  try {
+    const db = getDb();
+
+    // Zapisz log pinga
+    const insertLog = db.prepare(`
             INSERT INTO communication_logs 
             (id, timestamp, site_id, origin, ip, method, endpoint, status_code, 
              request_size, response_size, duration_ms, events_count, error_message, 
@@ -39,54 +40,56 @@ export async function GET(request: NextRequest) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
-        const response = {
-            status: 'ok',
-            message: 'Połączenie z backendem działa poprawnie',
-            timestamp: new Date().toISOString(),
-            site_id: siteId,
-            server_time: Date.now(),
-            your_ip: ip
-        };
-        
-        const responseSize = JSON.stringify(response).length;
-        const durationMs = Date.now() - startTime;
+    const response = {
+      status: 'ok',
+      message: 'Połączenie z backendem działa poprawnie',
+      timestamp: new Date().toISOString(),
+      site_id: siteId,
+      server_time: Date.now(),
+      your_ip: ip,
+    };
 
-        insertLog.run(
-            generateLogId(),
-            new Date().toISOString(),
-            siteId,
-            origin,
-            ip,
-            'GET',
-            '/api/logs/ping',
-            200,
-            0,
-            responseSize,
-            durationMs,
-            0,
-            null,
-            userAgent,
-            null,
-            null
-        );
+    const responseSize = JSON.stringify(response).length;
+    const durationMs = Date.now() - startTime;
 
-        return NextResponse.json(response, {
-            headers: {
-                'X-Response-Time': `${durationMs}ms`
-            }
-        });
+    insertLog.run(
+      generateLogId(),
+      new Date().toISOString(),
+      siteId,
+      origin,
+      ip,
+      'GET',
+      '/api/logs/ping',
+      200,
+      0,
+      responseSize,
+      durationMs,
+      0,
+      null,
+      userAgent,
+      null,
+      null,
+    );
 
-    } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[API/logs/ping] Error:', error);
-        
-        return NextResponse.json({
-            status: 'error',
-            message: 'Błąd serwera',
-            error: errorMsg,
-            timestamp: new Date().toISOString()
-        }, { status: 500 });
-    }
+    return NextResponse.json(response, {
+      headers: {
+        'X-Response-Time': `${durationMs}ms`,
+      },
+    });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[API/logs/ping] Error:', error);
+
+    return NextResponse.json(
+      {
+        status: 'error',
+        message: 'Błąd serwera',
+        error: errorMsg,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
 }
 
 /**
@@ -94,24 +97,25 @@ export async function GET(request: NextRequest) {
  * Alternatywna metoda dla stron które preferują POST
  */
 export async function POST(request: NextRequest) {
-    const startTime = Date.now();
-    const origin = request.headers.get('origin') || request.headers.get('referer') || null;
-    const userAgent = request.headers.get('user-agent') || null;
-    
-    // Pobierz IP
-    let ip = request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
-    if (ip.includes(',')) ip = ip.split(',')[0].trim();
-    if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
+  const startTime = Date.now();
+  const origin = request.headers.get('origin') || request.headers.get('referer') || null;
+  const userAgent = request.headers.get('user-agent') || null;
 
-    try {
-        const body = await request.json().catch(() => ({}));
-        const siteId = body.site_id || 'ping-test';
-        const requestSize = JSON.stringify(body).length;
+  // Pobierz IP
+  let ip =
+    request.headers.get('x-forwarded-for') ?? request.headers.get('x-real-ip') ?? '127.0.0.1';
+  if (ip.includes(',')) ip = ip.split(',')[0].trim();
+  if (ip.startsWith('::ffff:')) ip = ip.replace('::ffff:', '');
 
-        const db = getDb();
-        
-        // Zapisz log pinga
-        const insertLog = db.prepare(`
+  try {
+    const body = await request.json().catch(() => ({}));
+    const siteId = body.site_id || 'ping-test';
+    const requestSize = JSON.stringify(body).length;
+
+    const db = getDb();
+
+    // Zapisz log pinga
+    const insertLog = db.prepare(`
             INSERT INTO communication_logs 
             (id, timestamp, site_id, origin, ip, method, endpoint, status_code, 
              request_size, response_size, duration_ms, events_count, error_message, 
@@ -119,59 +123,60 @@ export async function POST(request: NextRequest) {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
-        const response = {
-            status: 'ok',
-            message: 'Połączenie z backendem działa poprawnie',
-            timestamp: new Date().toISOString(),
-            site_id: siteId,
-            server_time: Date.now(),
-            your_ip: ip,
-            received_data: !!body.site_id
-        };
-        
-        const responseSize = JSON.stringify(response).length;
-        const durationMs = Date.now() - startTime;
+    const response = {
+      status: 'ok',
+      message: 'Połączenie z backendem działa poprawnie',
+      timestamp: new Date().toISOString(),
+      site_id: siteId,
+      server_time: Date.now(),
+      your_ip: ip,
+      received_data: !!body.site_id,
+    };
 
-        insertLog.run(
-            generateLogId(),
-            new Date().toISOString(),
-            siteId,
-            origin,
-            ip,
-            'POST',
-            '/api/logs/ping',
-            200,
-            requestSize,
-            responseSize,
-            durationMs,
-            0,
-            null,
-            userAgent,
-            null,
-            null
-        );
+    const responseSize = JSON.stringify(response).length;
+    const durationMs = Date.now() - startTime;
 
-        return NextResponse.json(response, {
-            headers: {
-                'X-Response-Time': `${durationMs}ms`
-            }
-        });
+    insertLog.run(
+      generateLogId(),
+      new Date().toISOString(),
+      siteId,
+      origin,
+      ip,
+      'POST',
+      '/api/logs/ping',
+      200,
+      requestSize,
+      responseSize,
+      durationMs,
+      0,
+      null,
+      userAgent,
+      null,
+      null,
+    );
 
-    } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        console.error('[API/logs/ping] Error:', error);
-        
-        return NextResponse.json({
-            status: 'error',
-            message: 'Błąd serwera',
-            error: errorMsg,
-            timestamp: new Date().toISOString()
-        }, { status: 500 });
-    }
+    return NextResponse.json(response, {
+      headers: {
+        'X-Response-Time': `${durationMs}ms`,
+      },
+    });
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('[API/logs/ping] Error:', error);
+
+    return NextResponse.json(
+      {
+        status: 'error',
+        message: 'Błąd serwera',
+        error: errorMsg,
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
+  }
 }
 
 // Obsługa OPTIONS dla CORS preflight
 export async function OPTIONS() {
-    return new NextResponse(null, { status: 204 });
+  return new NextResponse(null, { status: 204 });
 }
-

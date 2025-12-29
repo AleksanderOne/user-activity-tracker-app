@@ -1,5 +1,10 @@
 import path from 'path';
 import { execSync } from 'child_process';
+import { createRequire } from 'module';
+import type Database from 'better-sqlite3';
+
+// Używamy createRequire ze ścieżką katalogu głównego, aby uniknąć problemów z import.meta w Jest
+const customRequire = createRequire(path.join(process.cwd(), 'index.js'));
 
 // Typy dla bazy danych
 export interface Event {
@@ -111,8 +116,8 @@ export interface LoginAttempt {
   password_length: number;
   page_url: string | null;
   page_path: string | null;
-  login_success: number | null;  // null=nieznane, 0=nieudane, 1=udane
-  detection_method: string | null;  // 'redirect', 'response', 'error', 'manual'
+  login_success: number | null; // null=nieznane, 0=nieudane, 1=udane
+  detection_method: string | null; // 'redirect', 'response', 'error', 'manual'
   error_message: string | null;
   redirect_url: string | null;
   response_status: number | null;
@@ -122,43 +127,50 @@ export interface LoginAttempt {
 // Interfejs dla ustawień śledzenia (inwigilacji)
 export interface TrackingSetting {
   id: number;
-  setting_type: 'global' | 'site';  // 'global' = cały system, 'site' = per projekt
-  site_id: string | null;           // NULL dla global, site_id dla site
-  enabled: boolean;                  // Czy śledzenie włączone
+  setting_type: 'global' | 'site'; // 'global' = cały system, 'site' = per projekt
+  site_id: string | null; // NULL dla global, site_id dla site
+  enabled: boolean; // Czy śledzenie włączone
   updated_at: string;
-  updated_by: string | null;         // Kto zmienił (opcjonalnie)
+  updated_by: string | null; // Kto zmienił (opcjonalnie)
 }
 
 // Interfejs dla zdalnych komend (Remote Control / "Straszak")
 export interface RemoteCommand {
   id: string;
   created_at: string;
-  site_id: string;                   // Docelowa strona
-  session_id: string | null;         // Konkretna sesja (opcjonalnie, NULL = wszystkie)
-  command_type: string;              // Typ komendy: 'scare', 'hide_cursor', 'block_console', etc.
-  payload: string;                   // JSON z parametrami komendy
-  executed: boolean;                 // Czy komenda została wykonana
-  executed_at: string | null;        // Kiedy została wykonana
-  expires_at: string | null;         // Kiedy wygasa (opcjonalnie)
-  created_by: string | null;         // Kto wysłał komendę
+  site_id: string; // Docelowa strona
+  session_id: string | null; // Konkretna sesja (opcjonalnie, NULL = wszystkie)
+  command_type: string; // Typ komendy: 'scare', 'hide_cursor', 'block_console', etc.
+  payload: string; // JSON z parametrami komendy
+  executed: boolean; // Czy komenda została wykonana
+  executed_at: string | null; // Kiedy została wykonana
+  expires_at: string | null; // Kiedy wygasa (opcjonalnie)
+  created_by: string | null; // Kto wysłał komendę
 }
 
 // Singleton dla połączenia z bazą
-let db: any = null;
+// Singleton dla połączenia z bazą
+let db: Database.Database | null = null;
 
-export function getDb(): any {
+export function getDb(): Database.Database {
   if (!db) {
     const dbPath = process.env.TRACKER_DB || path.join(process.cwd(), 'tracker.db');
 
     // Dynamic loading of better-sqlite3 to handle version mismatches gracefully
     let DatabaseClass;
     try {
-      DatabaseClass = require('better-sqlite3');
-    } catch (error: any) {
+      if (!customRequire) {
+        throw new Error('Could not find a way to require modules (no import.meta or require)');
+      }
+      DatabaseClass = customRequire('better-sqlite3');
+    } catch (error) {
       // Check for NODE_MODULE_VERSION mismatch error
       // Sprawdzenie czy wystąpił błąd niezgodności wersji Node.js
-      if (error.message && error.message.includes('NODE_MODULE_VERSION')) {
-        console.error('\n🔴 BŁĄD KRYTYCZNY: Wykryto niezgodność wersji Node.js z modułem bazy danych (better-sqlite3).');
+      const err = error as { message?: string };
+      if (err.message && err.message.includes('NODE_MODULE_VERSION')) {
+        console.error(
+          '\n🔴 BŁĄD KRYTYCZNY: Wykryto niezgodność wersji Node.js z modułem bazy danych (better-sqlite3).',
+        );
         console.log('🛠️  Próba automatycznej naprawy problemu (uruchamiam npm rebuild)...');
 
         try {
@@ -169,21 +181,25 @@ export function getDb(): any {
           console.log('🔄 Zrestartuj aplikację (Ctrl+C, a następnie npm run dev).\n');
           process.exit(1); // Exit to force user to restart, as new binary won't be loaded in current process
         } catch (rebuildError) {
-          console.error('❌ Automatyczna naprawa nie powiodła się. Spróbuj ręcznie uruchomić: npm rebuild better-sqlite3', rebuildError);
+          console.error(
+            '❌ Automatyczna naprawa nie powiodła się. Spróbuj ręcznie uruchomić: npm rebuild better-sqlite3',
+            rebuildError,
+          );
           throw error;
         }
       }
       throw error;
     }
 
-    db = new DatabaseClass(dbPath);
-    db.pragma('journal_mode = WAL');
-    db.pragma('synchronous = NORMAL');
-    db.pragma('cache_size = 10000');
-    db.pragma('temp_store = MEMORY');
-    initDb(db);
+    const _db = new DatabaseClass(dbPath) as Database.Database;
+    _db.pragma('journal_mode = WAL');
+    _db.pragma('synchronous = NORMAL');
+    _db.pragma('cache_size = 10000');
+    _db.pragma('temp_store = MEMORY');
+    initDb(_db);
+    db = _db;
   }
-  return db;
+  return db!;
 }
 
 // Funkcja do zamykania połączenia (dla graceful shutdown)
@@ -194,7 +210,7 @@ export function closeDb(): void {
   }
 }
 
-function initDb(database: any) {
+function initDb(database: Database.Database) {
   // Tabela eventów
   database.exec(`
     CREATE TABLE IF NOT EXISTS events (
@@ -441,7 +457,9 @@ function initDb(database: any) {
 
   // Migracja: dodaj kolumnę remote_commands_deleted jeśli nie istnieje
   try {
-    database.exec(`ALTER TABLE cleanup_history ADD COLUMN remote_commands_deleted INTEGER DEFAULT 0`);
+    database.exec(
+      `ALTER TABLE cleanup_history ADD COLUMN remote_commands_deleted INTEGER DEFAULT 0`,
+    );
   } catch {
     // Kolumna już istnieje - ignoruj błąd
   }
@@ -488,10 +506,14 @@ export function isTrackingEnabled(siteId: string): boolean {
   }
 
   // Sprawdź ustawienie globalne
-  const globalSetting = db.prepare(`
+  const globalSetting = db
+    .prepare(
+      `
         SELECT enabled FROM tracking_settings 
         WHERE setting_type = 'global' AND site_id IS NULL
-    `).get() as { enabled: number } | undefined;
+    `,
+    )
+    .get() as { enabled: number } | undefined;
 
   // Jeśli globalnie wyłączone - zwróć false
   if (globalSetting && globalSetting.enabled === 0) {
@@ -499,10 +521,14 @@ export function isTrackingEnabled(siteId: string): boolean {
   }
 
   // Sprawdź ustawienie dla konkretnego site_id
-  const siteSetting = db.prepare(`
+  const siteSetting = db
+    .prepare(
+      `
         SELECT enabled FROM tracking_settings 
         WHERE setting_type = 'site' AND site_id = ?
-    `).get(siteId) as { enabled: number } | undefined;
+    `,
+    )
+    .get(siteId) as { enabled: number } | undefined;
 
   // Jeśli site_id ma jawnie wyłączone - zwróć false
   if (siteSetting && siteSetting.enabled === 0) {
@@ -518,15 +544,19 @@ export function isTrackingEnabled(siteId: string): boolean {
  */
 export function getTrackingSettings(): TrackingSetting[] {
   const db = getDb();
-  const settings = db.prepare(`
+  const settings = db
+    .prepare(
+      `
         SELECT id, setting_type, site_id, enabled, updated_at, updated_by
         FROM tracking_settings
         ORDER BY setting_type DESC, site_id ASC
-    `).all() as TrackingSetting[];
+    `,
+    )
+    .all() as TrackingSetting[];
 
-  return settings.map(s => ({
+  return settings.map((s) => ({
     ...s,
-    enabled: Boolean(s.enabled)
+    enabled: Boolean(s.enabled),
   }));
 }
 
@@ -535,11 +565,13 @@ export function getTrackingSettings(): TrackingSetting[] {
  */
 export function setGlobalTrackingEnabled(enabled: boolean, updatedBy?: string): void {
   const db = getDb();
-  db.prepare(`
+  db.prepare(
+    `
         UPDATE tracking_settings 
         SET enabled = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
         WHERE setting_type = 'global' AND site_id IS NULL
-    `).run(enabled ? 1 : 0, updatedBy || null);
+    `,
+  ).run(enabled ? 1 : 0, updatedBy || null);
 }
 
 /**
@@ -547,12 +579,14 @@ export function setGlobalTrackingEnabled(enabled: boolean, updatedBy?: string): 
  */
 export function setSiteTrackingEnabled(siteId: string, enabled: boolean, updatedBy?: string): void {
   const db = getDb();
-  db.prepare(`
+  db.prepare(
+    `
         INSERT INTO tracking_settings (setting_type, site_id, enabled, updated_at, updated_by)
         VALUES ('site', ?, ?, CURRENT_TIMESTAMP, ?)
         ON CONFLICT(setting_type, site_id) 
         DO UPDATE SET enabled = ?, updated_at = CURRENT_TIMESTAMP, updated_by = ?
-    `).run(siteId, enabled ? 1 : 0, updatedBy || null, enabled ? 1 : 0, updatedBy || null);
+    `,
+  ).run(siteId, enabled ? 1 : 0, updatedBy || null, enabled ? 1 : 0, updatedBy || null);
 }
 
 /**
@@ -560,10 +594,12 @@ export function setSiteTrackingEnabled(siteId: string, enabled: boolean, updated
  */
 export function removeSiteTrackingSetting(siteId: string): void {
   const db = getDb();
-  db.prepare(`
+  db.prepare(
+    `
         DELETE FROM tracking_settings 
         WHERE setting_type = 'site' AND site_id = ?
-    `).run(siteId);
+    `,
+  ).run(siteId);
 }
 
 /**
@@ -571,13 +607,17 @@ export function removeSiteTrackingSetting(siteId: string): void {
  */
 export function getAllTrackedSites(): string[] {
   const db = getDb();
-  const sites = db.prepare(`
+  const sites = db
+    .prepare(
+      `
         SELECT DISTINCT site_id FROM sessions 
         WHERE site_id IS NOT NULL
         ORDER BY site_id ASC
-    `).all() as { site_id: string }[];
+    `,
+    )
+    .all() as { site_id: string }[];
 
-  return sites.map(s => s.site_id);
+  return sites.map((s) => s.site_id);
 }
 
 export default getDb;

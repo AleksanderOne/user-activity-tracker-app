@@ -4,35 +4,37 @@ import { getDb } from '@/lib/db';
 export const dynamic = 'force-dynamic';
 
 interface SiteStats {
-    site_id: string;
-    hostname: string | null;
-    event_count: number;
-    session_count: number;
-    visitor_count: number;
-    active_now: number;
-    top_countries: Array<{ country: string; count: number }>;
-    top_browsers: Array<{ browser: string; count: number }>;
-    top_platforms: Array<{ platform: string; count: number }>;
-    last_activity: string;
-    bounce_rate: number;
-    avg_session_duration: number;
+  site_id: string;
+  hostname: string | null;
+  event_count: number;
+  session_count: number;
+  visitor_count: number;
+  active_now: number;
+  top_countries: Array<{ country: string; count: number }>;
+  top_browsers: Array<{ browser: string; count: number }>;
+  top_platforms: Array<{ platform: string; count: number }>;
+  last_activity: string;
+  bounce_rate: number;
+  avg_session_duration: number;
 }
 
 interface CountryStats {
-    country: string;
-    sessions: number;
-    visitors: number;
-    events: number;
-    active: number;
-    top_cities: Array<{ city: string; count: number }>;
+  country: string;
+  sessions: number;
+  visitors: number;
+  events: number;
+  active: number;
+  top_cities: Array<{ city: string; count: number }>;
 }
 
 export async function GET() {
-    try {
-        const db = getDb();
+  try {
+    const db = getDb();
 
-        // 1. Pobierz statystyki dla każdej strony (site_id)
-        const sitesQuery = db.prepare(`
+    // 1. Pobierz statystyki dla każdej strony (site_id)
+    const sitesQuery = db
+      .prepare(
+        `
             SELECT 
                 s.site_id,
                 MAX(json_extract(e.data, '$.hostname')) as hostname,
@@ -46,27 +48,36 @@ export async function GET() {
             GROUP BY s.site_id
             ORDER BY event_count DESC
             LIMIT 20
-        `).all() as Array<{
-            site_id: string;
-            hostname: string | null;
-            event_count: number;
-            session_count: number;
-            visitor_count: number;
-            last_activity: string;
-        }>;
+        `,
+      )
+      .all() as Array<{
+      site_id: string;
+      hostname: string | null;
+      event_count: number;
+      session_count: number;
+      visitor_count: number;
+      last_activity: string;
+    }>;
 
-        // Dla każdej strony pobierz dodatkowe dane
-        const sites: SiteStats[] = await Promise.all(sitesQuery.map(async (site) => {
-            // Aktywni teraz (ostatnie 5 minut)
-            const activeNow = db.prepare(`
+    // Dla każdej strony pobierz dodatkowe dane
+    const sites: SiteStats[] = await Promise.all(
+      sitesQuery.map(async (site) => {
+        // Aktywni teraz (ostatnie 5 minut)
+        const activeNow = db
+          .prepare(
+            `
                 SELECT COUNT(DISTINCT session_id) as count
                 FROM sessions
                 WHERE site_id = ?
                 AND datetime(last_activity) > datetime('now', '-5 minutes')
-            `).get(site.site_id) as { count: number };
+            `,
+          )
+          .get(site.site_id) as { count: number };
 
-            // Top kraje dla tej strony
-            const topCountries = db.prepare(`
+        // Top kraje dla tej strony
+        const topCountries = db
+          .prepare(
+            `
                 SELECT 
                     json_extract(device_info, '$.location.country') as country,
                     COUNT(*) as count
@@ -78,10 +89,14 @@ export async function GET() {
                 GROUP BY country
                 ORDER BY count DESC
                 LIMIT 5
-            `).all(site.site_id) as Array<{ country: string; count: number }>;
+            `,
+          )
+          .all(site.site_id) as Array<{ country: string; count: number }>;
 
-            // Top przeglądarki dla tej strony
-            const topBrowsers = db.prepare(`
+        // Top przeglądarki dla tej strony
+        const topBrowsers = db
+          .prepare(
+            `
                 SELECT 
                     json_extract(device_info, '$.browserName') as browser,
                     COUNT(*) as count
@@ -93,10 +108,14 @@ export async function GET() {
                 GROUP BY browser
                 ORDER BY count DESC
                 LIMIT 5
-            `).all(site.site_id) as Array<{ browser: string; count: number }>;
+            `,
+          )
+          .all(site.site_id) as Array<{ browser: string; count: number }>;
 
-            // Top platformy dla tej strony
-            const topPlatforms = db.prepare(`
+        // Top platformy dla tej strony
+        const topPlatforms = db
+          .prepare(
+            `
                 SELECT 
                     json_extract(device_info, '$.platform') as platform,
                     COUNT(*) as count
@@ -108,10 +127,14 @@ export async function GET() {
                 GROUP BY platform
                 ORDER BY count DESC
                 LIMIT 5
-            `).all(site.site_id) as Array<{ platform: string; count: number }>;
+            `,
+          )
+          .all(site.site_id) as Array<{ platform: string; count: number }>;
 
-            // Bounce rate (sesje z tylko 1 pageview)
-            const bounceData = db.prepare(`
+        // Bounce rate (sesje z tylko 1 pageview)
+        const bounceData = db
+          .prepare(
+            `
                 SELECT 
                     CAST(COUNT(CASE WHEN pv_count = 1 THEN 1 END) AS FLOAT) / NULLIF(COUNT(*), 0) * 100 as bounce_rate
                 FROM (
@@ -121,10 +144,14 @@ export async function GET() {
                     AND datetime(timestamp) > datetime('now', '-24 hours')
                     GROUP BY session_id
                 )
-            `).get(site.site_id) as { bounce_rate: number | null };
+            `,
+          )
+          .get(site.site_id) as { bounce_rate: number | null };
 
-            // Średni czas sesji
-            const avgDuration = db.prepare(`
+        // Średni czas sesji
+        const avgDuration = db
+          .prepare(
+            `
                 SELECT AVG(duration) as avg_duration FROM (
                     SELECT (strftime('%s', MAX(timestamp)) - strftime('%s', MIN(timestamp))) as duration
                     FROM events
@@ -132,26 +159,31 @@ export async function GET() {
                     AND datetime(timestamp) > datetime('now', '-24 hours')
                     GROUP BY session_id
                 )
-            `).get(site.site_id) as { avg_duration: number | null };
+            `,
+          )
+          .get(site.site_id) as { avg_duration: number | null };
 
-            return {
-                site_id: site.site_id,
-                hostname: site.hostname,
-                event_count: site.event_count,
-                session_count: site.session_count,
-                visitor_count: site.visitor_count,
-                active_now: activeNow?.count || 0,
-                top_countries: topCountries.filter(c => c.country),
-                top_browsers: topBrowsers.filter(b => b.browser),
-                top_platforms: topPlatforms.filter(p => p.platform),
-                last_activity: site.last_activity,
-                bounce_rate: bounceData?.bounce_rate || 0,
-                avg_session_duration: avgDuration?.avg_duration || 0,
-            };
-        }));
+        return {
+          site_id: site.site_id,
+          hostname: site.hostname,
+          event_count: site.event_count,
+          session_count: site.session_count,
+          visitor_count: site.visitor_count,
+          active_now: activeNow?.count || 0,
+          top_countries: topCountries.filter((c) => c.country),
+          top_browsers: topBrowsers.filter((b) => b.browser),
+          top_platforms: topPlatforms.filter((p) => p.platform),
+          last_activity: site.last_activity,
+          bounce_rate: bounceData?.bounce_rate || 0,
+          avg_session_duration: avgDuration?.avg_duration || 0,
+        };
+      }),
+    );
 
-        // 2. Pobierz statystyki per kraj
-        const countriesQuery = db.prepare(`
+    // 2. Pobierz statystyki per kraj
+    const countriesQuery = db
+      .prepare(
+        `
             SELECT 
                 json_extract(device_info, '$.location.country') as country,
                 COUNT(DISTINCT session_id) as sessions,
@@ -163,33 +195,46 @@ export async function GET() {
             GROUP BY country
             ORDER BY sessions DESC
             LIMIT 15
-        `).all() as Array<{
-            country: string;
-            sessions: number;
-            visitors: number;
-        }>;
+        `,
+      )
+      .all() as Array<{
+      country: string;
+      sessions: number;
+      visitors: number;
+    }>;
 
-        // Dla każdego kraju pobierz dodatkowe dane
-        const countries: CountryStats[] = await Promise.all(countriesQuery.map(async (c) => {
-            // Liczba eventów
-            const eventsCount = db.prepare(`
+    // Dla każdego kraju pobierz dodatkowe dane
+    const countries: CountryStats[] = await Promise.all(
+      countriesQuery.map(async (c) => {
+        // Liczba eventów
+        const eventsCount = db
+          .prepare(
+            `
                 SELECT COUNT(*) as count
                 FROM events e
                 JOIN sessions s ON e.session_id = s.session_id
                 WHERE json_extract(s.device_info, '$.location.country') = ?
                 AND datetime(e.timestamp) > datetime('now', '-24 hours')
-            `).get(c.country) as { count: number };
+            `,
+          )
+          .get(c.country) as { count: number };
 
-            // Aktywni teraz
-            const activeNow = db.prepare(`
+        // Aktywni teraz
+        const activeNow = db
+          .prepare(
+            `
                 SELECT COUNT(DISTINCT session_id) as count
                 FROM sessions
                 WHERE json_extract(device_info, '$.location.country') = ?
                 AND datetime(last_activity) > datetime('now', '-5 minutes')
-            `).get(c.country) as { count: number };
+            `,
+          )
+          .get(c.country) as { count: number };
 
-            // Top miasta
-            const topCities = db.prepare(`
+        // Top miasta
+        const topCities = db
+          .prepare(
+            `
                 SELECT 
                     json_extract(device_info, '$.location.city') as city,
                     COUNT(*) as count
@@ -200,55 +245,66 @@ export async function GET() {
                 GROUP BY city
                 ORDER BY count DESC
                 LIMIT 8
-            `).all(c.country) as Array<{ city: string | null; count: number }>;
+            `,
+          )
+          .all(c.country) as Array<{ city: string | null; count: number }>;
 
-            return {
-                country: c.country,
-                sessions: c.sessions,
-                visitors: c.visitors,
-                events: eventsCount?.count || 0,
-                active: activeNow?.count || 0,
-                top_cities: topCities.map(city => ({
-                    city: city.city || 'Nieznane',
-                    count: city.count
-                })),
-            };
-        }));
+        return {
+          country: c.country,
+          sessions: c.sessions,
+          visitors: c.visitors,
+          events: eventsCount?.count || 0,
+          active: activeNow?.count || 0,
+          top_cities: topCities.map((city) => ({
+            city: city.city || 'Nieznane',
+            count: city.count,
+          })),
+        };
+      }),
+    );
 
-        // 3. Globalne statystyki
-        const totalActive = db.prepare(`
+    // 3. Globalne statystyki
+    const totalActive = db
+      .prepare(
+        `
             SELECT COUNT(DISTINCT session_id) as count
             FROM sessions
             WHERE datetime(last_activity) > datetime('now', '-5 minutes')
-        `).get() as { count: number };
+        `,
+      )
+      .get() as { count: number };
 
-        const totalSessions24h = db.prepare(`
+    const totalSessions24h = db
+      .prepare(
+        `
             SELECT COUNT(DISTINCT session_id) as count
             FROM sessions
             WHERE datetime(started_at) > datetime('now', '-24 hours')
-        `).get() as { count: number };
+        `,
+      )
+      .get() as { count: number };
 
-        const totalCountries = db.prepare(`
+    const totalCountries = db
+      .prepare(
+        `
             SELECT COUNT(DISTINCT json_extract(device_info, '$.location.country')) as count
             FROM sessions
             WHERE device_info IS NOT NULL
             AND json_extract(device_info, '$.location.country') IS NOT NULL
             AND datetime(started_at) > datetime('now', '-24 hours')
-        `).get() as { count: number };
+        `,
+      )
+      .get() as { count: number };
 
-        return NextResponse.json({
-            sites,
-            countries,
-            total_active: totalActive?.count || 0,
-            total_sessions_24h: totalSessions24h?.count || 0,
-            total_countries: totalCountries?.count || 0,
-        });
-    } catch (error) {
-        console.error('Error in /api/stats/locations/panel:', error);
-        return NextResponse.json(
-            { error: 'Internal server error' },
-            { status: 500 }
-        );
-    }
+    return NextResponse.json({
+      sites,
+      countries,
+      total_active: totalActive?.count || 0,
+      total_sessions_24h: totalSessions24h?.count || 0,
+      total_countries: totalCountries?.count || 0,
+    });
+  } catch (error) {
+    console.error('Error in /api/stats/locations/panel:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
-
